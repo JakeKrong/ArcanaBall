@@ -1,8 +1,11 @@
 ﻿# CMakeList.txt : Top-level CMake project file, do global configuration and include sub-projects here.
 
 cmake_minimum_required (VERSION 3.15)
-set(CMAKE_POLICY_VERSION_MINIMUM 3.5)
 project("ArcanaBall" VERSION 0.1.0)
+
+set(CMAKE_CXX_STANDARD 23)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
 
 #Fetch SFML
 include(FetchContent)
