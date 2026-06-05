@@ -11,7 +11,7 @@ EntityManager::EntityManager() {
 
 EntityManager::~EntityManager() {};
 
-Entity EntityManager::CreateEntity() {
+Entity EntityManager::PopEntity() {
 	assert(m_AvailableEntities.size() != 0 && "No more available Entity ID's left!");
 
 	Entity id = m_AvailableEntities.front();
@@ -20,12 +20,12 @@ Entity EntityManager::CreateEntity() {
 	return id;
 }
 
-void EntityManager::DestroyEntity(Entity ent) {
+void EntityManager::PushEntity(Entity ent) {
 	m_AvailableEntities.push(ent);
 	m_EntSignatures[ent].reset();
 }
 
-Signature& EntityManager::GetEntSignature(Entity ent) {
+Signature EntityManager::GetEntSignature(Entity ent) {
 	return m_EntSignatures[ent];
 }
 

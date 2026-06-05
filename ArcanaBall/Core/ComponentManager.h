@@ -61,7 +61,7 @@ public:
 	}
 
 	//For testing
-	std::vector<std::pair<Entity, T&>> GetAllComponents(){
+	std::vector<std::pair<Entity, T&>> GetAllTComponents(){
 		std::vector<std::pair<Entity, T&>> entComponent;
 		
 		for (auto& [ent, idx] : m_EntityToComponentMap) {

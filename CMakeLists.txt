@@ -1,25 +1,29 @@
-﻿# CMakeList.txt : CMake project for ArcanaBall, include source and define
-# project specific logic here.
+﻿# CMakeList.txt : Top-level CMake project file, do global configuration and include sub-projects here.
 
-SET (GAME_SOURCES
- "Core/Types.h"
- "Core/EntityManager.h" "Core/EntityManager.cpp" "Core/ComponentManager.h"  
- "Components/Transform.h")
+cmake_minimum_required (VERSION 3.15)
+set(CMAKE_POLICY_VERSION_MINIMUM 3.5)
+project("ArcanaBall" VERSION 0.1.0)
 
-SET (INCLUDE_DIRS
-	${CMAKE_CURRENT_SOURCE_DIR}/Core
-	${CMAKE_CURRENT_SOURCE_DIR}/Components
+#Fetch SFML
+include(FetchContent)
+FetchContent_Declare(
+	sfml
+	GIT_REPOSITORY https://github.com/SFML/SFML.git
+	GIT_TAG 3.0.0
 )
-
-# Add source to this project's executable.
-add_executable (ArcanaBall "ArcanaBall.cpp" "ArcanaBall.h" ${GAME_SOURCES})
-
-target_include_directories(ArcanaBall PRIVATE ${INCLUDE_DIRS})
-
-target_link_directories(ArcanaBall PRIVATE 
-	sfml-graphics
+#Fetch Catch2
+FetchContent_Declare(
+	Catch2
+	GIT_REPOSITORY https://github.com/catchorg/Catch2.git
+	GIT_TAG v3.4.0
 )
+FetchContent_MakeAvailable(sfml Catch2)
 
-if (CMAKE_VERSION VERSION_GREATER 3.12)
-  set_property(TARGET ArcanaBall PROPERTY CXX_STANDARD 20)
+# Enable Hot Reload for MSVC compilers if supported.
+if (POLICY CMP0141)
+  cmake_policy(SET CMP0141 NEW)
+  set(CMAKE_MSVC_DEBUG_INFORMATION_FORMAT "$<IF:$<AND:$<C_COMPILER_ID:MSVC>,$<CXX_COMPILER_ID:MSVC>>,$<$<CONFIG:Debug,RelWithDebInfo>:EditAndContinue>,$<$<CONFIG:Debug,RelWithDebInfo>:ProgramDatabase>>")
 endif()
+
+# Include sub-projects.
+add_subdirectory ("ArcanaBall")
