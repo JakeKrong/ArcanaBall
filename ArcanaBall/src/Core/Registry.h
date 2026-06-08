@@ -7,7 +7,6 @@
 class Registry {
 public:
 	Registry();
-	~Registry();
 
 //Disable copying, only allow moving
 	Registry(const Registry&) = delete;
@@ -45,7 +44,7 @@ public:
 		Signature newEnttSig = oldEnttSig;
 		newEnttSig.set(m_CompManager->GetComponentID<T>(), false);
 
-		m_EntManager->SetSignature(ent, enttSig);
+		m_EntManager->SetSignature(ent, newEnttSig);
 		m_SysManager->EntitySigChanged(ent, oldEnttSig, newEnttSig);
 	}
 

@@ -5,6 +5,7 @@
 
 #define TargetFixedUpdateFreq 144
 #define DefaultVolumeSetting 20
+#define DefaultResolution {1280, 720}
 
 using Entity = std::uint8_t;
 using ComponentID = std::uint16_t;
