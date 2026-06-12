@@ -2,6 +2,10 @@
 #include <SFML/Graphics/RenderWindow.hpp>
 
 #include "Registry.h"
+#include "StateManager.h"
+#include "InputManager.h"
+#include "TextureManager.h"
+#include "AudioManager.h"
 
 class Game {
 public:
@@ -10,11 +14,18 @@ public:
 
 	void Run();
 
-	//Getters for World, Windows, Asset Managers
+	//Manager Getters
+	Registry& GetRegistry();
+	InputManager& GetInputManager();
+	TextureManager& GetTextureManager();
+	AudioManager& GetAudioManager();
 
 private:
 	Registry m_Registry;
 	sf::RenderWindow m_Window;
 
-	//World, Windows, Asset Managers
+	StateManager m_StateManager;
+	InputManager m_InputManager;
+	TextureManager m_TextureManager;
+	AudioManager m_AudioManager;
 };

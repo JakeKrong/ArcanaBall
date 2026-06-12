@@ -10,16 +10,22 @@ struct InputState {
 
 	//Mouse
 	bool mouseClicked = false;
-	bool windowFocused = true;
+	bool mouseReleased = false;
 	sf::Vector2i mousePos;
+
+	//Window
+	bool windowFocused = true;
+	
 };
 
 
 class InputManager {
 public:
 	void Update(sf::RenderWindow&);
-	const InputState& GetInputStates() const;
-	void SetWindowFocus(bool);
+	void HandleEvent(const sf::Event&);
+
+	InputState& GetInputStates();
+	void ResetMouseClicked();
 
 private:
 	InputState m_InputState;

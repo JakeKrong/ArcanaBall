@@ -16,11 +16,11 @@ public:
 		std::type_index sysInd = typeid(T);
 		assert(m_SysSignatureMap.find(sysInd) == m_SysSignatureMap.end() && "Registering an already registered system!");
 
-		auto registeredSystem = CreateScope<ISystem>();
+		auto registeredSystem = CreateScope<T>();
 		T& systemRef = *registeredSystem;
 
 		m_SysSignatureMap.insert({ sysInd, Signature{} });
-		m_SystemMap.insert({ sysInd, registeredSystem });
+		m_SystemMap.insert({ sysInd, std::move(registeredSystem) });
 
 		return systemRef;
 	}

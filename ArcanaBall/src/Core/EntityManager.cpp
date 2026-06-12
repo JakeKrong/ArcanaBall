@@ -6,7 +6,7 @@ EntityManager::EntityManager() {
 	for (int i = 0; i < ENTITY_CAP; i++) {
 		m_AvailableEntities.push(i);
 	}
-	m_EntSignatures.reserve(ENTITY_CAP);
+	m_EntSignatures.resize(ENTITY_CAP);
 };
 
 EntityManager::~EntityManager() {};

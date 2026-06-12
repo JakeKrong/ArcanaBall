@@ -4,7 +4,7 @@
 
 #include "Types.h"
 
-class World; //Forward declaration
+class Registry; //Forward declaration
 
 class ISystem {
 public:
@@ -25,11 +25,11 @@ public:
 		return m_Entities;
 	}
 
-	void SetWorld(World* world) {
-		m_World = world;
+	void SetRegistry(Registry* registry) {
+		m_Registry = registry;
 	}
 
-private:
+protected:
 	std::vector<Entity> m_Entities;
-	World* m_World = nullptr;
+	Registry* m_Registry = nullptr;
 };

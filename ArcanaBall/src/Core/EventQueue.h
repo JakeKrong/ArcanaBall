@@ -4,24 +4,8 @@
 #include <unordered_map>
 #include <typeindex>
 #include <memory>
-#include <variant>
 
-
-// Can move event to separate .h file if becomes bloated
-class BaseEvent {
-	virtual ~BaseEvent() = default;
-};
-
-class TempEvent : public BaseEvent {
-
-};
-
-class SpawnEntityEvent : public BaseEvent {
-	enum class Type { Enemy, BloodEffect, Etc };
-	Type type;
-
-	std::variant<int, float> payload; //Insert data for each class type
-};
+#include "BaseEvent.h"
 
 class EventQueue {
 public:
@@ -31,7 +15,7 @@ public:
 	}
 
 	template<typename T>
-	std::vector<T*> GetEventQueue() {
+	std::vector<T*> GetTEvents() {
 		std::vector<T*> events;
 		auto it = m_EventsMap.find(typeid(T));
 
@@ -43,7 +27,7 @@ public:
 		return events;
 	}
 
-	void ClearEvents() { m_EventsMap.clear(); }
+	inline void ClearEvents() { m_EventsMap.clear(); }
 
 private:
 	std::unordered_map<std::type_index, std::vector<std::unique_ptr<BaseEvent>>> m_EventsMap;

@@ -1,18 +1,34 @@
 #include "InputManager.h"
 
-#include <iostream>
-
 void InputManager::Update(sf::RenderWindow& window) {
-	m_InputState.mouseClicked = sf::Mouse::isButtonPressed(sf::Mouse::Button::Left);
-	m_InputState.mousePos = sf::Mouse::getPosition(window);
+	m_InputState.mousePos = sf::Mouse::getPosition(window); //Set clamp later
 
-	m_InputState.windowFocused = window.hasFocus();
 }
 
-const InputState& InputManager::GetInputStates() const{
+void InputManager::HandleEvent(const sf::Event& event) {
+	if (event.is<sf::Event::MouseButtonPressed>()) {
+		if (event.getIf<sf::Event::MouseButtonPressed>()->button == sf::Mouse::Button::Left) {
+			GetInputStates().mouseClicked = true;
+		}
+	}
+	else if (event.is<sf::Event::MouseButtonReleased>()) {
+		if (event.getIf<sf::Event::MouseButtonReleased>()->button == sf::Mouse::Button::Left) {
+			GetInputStates().mouseReleased = true;
+		}
+	}
+	if (event.getIf<sf::Event::FocusGained>()) {
+		GetInputStates().windowFocused = true;
+	}
+	else if (event.getIf<sf::Event::FocusGained>()) {
+		GetInputStates().windowFocused = false;
+	}
+}
+
+InputState& InputManager::GetInputStates() {
 	return m_InputState;
 }
 
-void InputManager::SetWindowFocus(bool focus) {
-	m_InputState.windowFocused = false;
+void InputManager::ResetMouseClicked() {
+	m_InputState.mouseClicked = false;
+	m_InputState.mouseReleased = false;
 }

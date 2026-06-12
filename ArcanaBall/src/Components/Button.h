@@ -2,7 +2,8 @@
 #include <variant>
 #include <cstdint>
 
-enum class ActionType : uint8_t {
+enum class ButtonAction : uint8_t {
+	NoAction,
 	//State Control
 	StartGame,
 	ExitGame,
@@ -10,17 +11,18 @@ enum class ActionType : uint8_t {
 	ResumeGame
 };
 
-using ButtonPayload = std::variant<int, float>;
+using ButtonPayload = std::variant<uint8_t>; //Adjust to actual payload later
 
-class Button {
-	
-	Button(ActionType action, ButtonPayload payload) :
-		buttonAction(action),
-		buttonPayload(payload)
+struct Button {
+
+	Button() = default;
+
+	Button(ButtonAction action) :
+		buttonAction(action)
 	{}
 
-	ButtonPayload buttonPayload;
-	ActionType buttonAction;
+	ButtonPayload buttonPayload{ uint8_t{ 0 } };
+	ButtonAction buttonAction{ ButtonAction::NoAction };
+	bool isOnPress{ true }; //On press or On release
 	bool isEnabled{ true };
-	bool isHeld{ false };
 };

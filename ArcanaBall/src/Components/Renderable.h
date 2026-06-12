@@ -11,7 +11,7 @@ enum RenderLayer : uint8_t{
 };
 
 struct Renderable {
-	sf::Texture* texture = nullptr;
+	const sf::Texture* texture = nullptr;
 	RenderLayer layer{ 0 };
 	bool visible{ true };
 	bool flipX{ false };

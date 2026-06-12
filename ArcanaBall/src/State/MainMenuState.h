@@ -1,5 +1,9 @@
 #pragma once
 #include "IState.h"
+#include "Types.h"
+
+#include "UISystem.h"
+#include "RenderSystem.h"
 
 class MainMenuState : public IState{
 public:
@@ -8,7 +12,10 @@ public:
 	void Enter() override;
 	void Exit() override;
 
-	void Update(float);
-	void HandleEvents(const sf::Event&);
-	void Render(sf::RenderWindow&);
+	void Update(float) override;
+	void Render(sf::RenderWindow&) override;
+
+private:
+	RenderSystem& m_RenderSystem;
+	UISystem& m_UISystem;
 };

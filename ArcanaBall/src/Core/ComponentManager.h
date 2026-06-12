@@ -6,6 +6,8 @@
 #include <assert.h>
 
 #include "Types.h"
+#include "Component.h"
+
 
 //Interface for ComponentArray
 class IComponentArray {
@@ -60,8 +62,7 @@ public:
 		return m_ComponentArray[m_EntityToComponentMap[ent]];
 	}
 
-	//For testing
-	std::vector<std::pair<Entity, T&>> GetAllTComponents(){
+	std::vector<std::pair<Entity, T&>> GetAllTEntityComponent(){ //For testing only
 		std::vector<std::pair<Entity, T&>> entComponent;
 		
 		for (auto& [ent, idx] : m_EntityToComponentMap) {
@@ -113,7 +114,7 @@ public:
 		std::type_index componentInd = typeid(T);
 		assert(m_ComponentTypeIds.find(componentInd) != m_ComponentTypeIds.end() && "Component Type is not registered!");
 
-		GetComponentArray<T>().AddTComponent(std::forward<Args>(args)...);
+		GetComponentArray<T>().AddTComponent(ent, std::forward<Args>(args)...);
 	}
 
 	template<typename T>

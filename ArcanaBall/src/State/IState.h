@@ -6,7 +6,9 @@ class Game; //Forward declaration
 
 class IState {
 public:
-	inline IState(Game* game) : m_Game(game) {};
+	inline IState(Game* game) :
+		m_Game(game) 
+	{};
 
 	virtual ~IState() = default;
 
@@ -14,7 +16,6 @@ public:
 	virtual void Exit() = 0;
 
 	virtual void Update(float) = 0;
-	virtual void HandleEvents(const sf::Event&) = 0;
 	virtual void Render(sf::RenderWindow&) = 0;
 
 public:
