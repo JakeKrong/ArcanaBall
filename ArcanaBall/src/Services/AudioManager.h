@@ -7,6 +7,7 @@
 #include <SFML/Audio/Music.hpp>
 
 #include "AudioAsset.h"
+#include "EventQueue.h"
 
 using AudioID = uint16_t;
 
@@ -25,7 +26,7 @@ public:
     void StopAudio(AudioID id);
     void StopAllAudio();
 
-    void UpdateChannels();
+    void UpdateChannels(EventQueue&);
 
     void PlayMusic(const std::string&, bool loop = true);
     void StopMusic();
@@ -44,7 +45,7 @@ private:
     float m_AudioVolume;
 
 #ifdef _DEBUG
-    std::string m_SoundBasePath = "../../../../ShurikenTactics/assets/audio/";
+    std::string m_SoundBasePath = "../../../../ArcanaBall/assets/audio/";
 #else 
     std::string m_SoundBasePath = "assets/audio/";
 #endif

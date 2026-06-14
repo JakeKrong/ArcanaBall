@@ -31,4 +31,5 @@ public:
 
 private:
 	std::unordered_map<std::type_index, std::vector<std::unique_ptr<BaseEvent>>> m_EventsMap;
+	std::unordered_map<std::type_index, std::vector<std::unique_ptr<std::pair<BaseEvent, float>>>> m_DelayedEventsMap;
 };

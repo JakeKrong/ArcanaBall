@@ -4,7 +4,8 @@
 #include "Registry.h"
 #include "TextureManager.h"
 
-class Prefab{
-public:
-	Entity Button(const Registry&, TextureManager&);
+namespace Prefab{
+	Entity Button(Registry&, TextureManager&);
+	Entity Ball(Registry&, TextureManager&);
+	void LevelBorders(Registry&, TextureManager&);
 };

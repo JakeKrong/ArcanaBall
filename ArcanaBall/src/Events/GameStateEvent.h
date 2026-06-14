@@ -1,7 +1,7 @@
 #pragma once
 #include "BaseEvent.h"
 
-struct GameStateEvent : public BaseEvent {
+struct GameStateEvent : BaseEvent {
 	enum class Type { StartGame, EndGame };
 
 	GameStateEvent(Type type):

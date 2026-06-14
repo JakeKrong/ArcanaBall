@@ -1,6 +1,10 @@
 #include "Game.h"
 #include "MainMenuState.h"
+#include "PlayingState.h"
 #include "GameStateEvent.h"
+
+//Testing
+#include <iostream>
 
 Game::Game() :
 	m_Window(sf::RenderWindow(sf::VideoMode(DefaultResolution), "Arcana Ball"))
@@ -12,10 +16,14 @@ Game::Game() :
 void Game::Run() {
 	sf::Clock timer;
 
+	//Set initial state
 	m_StateManager.ChangeState(std::make_unique<MainMenuState>(this));
+	//Load Service Manager assets
+	m_AudioManager.PreloadAudio();
 
 	while (m_Window.isOpen()) {
 		float deltaTime = timer.restart().asSeconds();
+		std::cout << deltaTime << "\n";
 		if (deltaTime > 0.1) deltaTime = 0.1; //Clamp deltaTime to max
 
 		//Poll and process game window events
@@ -30,11 +38,13 @@ void Game::Run() {
 		m_StateManager.Update(deltaTime);
 		m_StateManager.Render(m_Window);
 
+		m_AudioManager.UpdateChannels(m_Registry.GetEventQueue());
+
 		//Consume Game State Events
 		for (auto event : m_Registry.GetEventQueue().GetTEvents<GameStateEvent>()) {
 			if (event->type == GameStateEvent::Type::StartGame) {
 				m_Registry.ResetManagers();
-				m_StateManager.EnqueueChangeState(std::make_unique<MainMenuState>(this));
+				m_StateManager.EnqueueChangeState(std::make_unique<PlayingState>(this));
 				break;
 			}
 			else if (event->type == GameStateEvent::Type::EndGame) {

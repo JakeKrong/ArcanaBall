@@ -2,10 +2,9 @@
 
 #include "Registry.h"
 #include "Button.h"
-#include "GameStateEvent.h"
 
-//Testing
-#include <iostream>
+#include "GameStateEvent.h"
+#include "AudioEvent.h"
 
 void UISystem::Update(const InputState& input){
 	if (!m_Registry || m_Entities.size() == 0) {
@@ -38,7 +37,7 @@ void UISystem::Update(const InputState& input){
 				default:
 					break;
 				}
-					
+				m_Registry->GetEventQueue().Publish<AudioEvent>(AudioAsset::UI_ButtonClick);
 			}
 			//Perform release
 			else if (!buttonComp.isOnPress && input.mouseReleased){

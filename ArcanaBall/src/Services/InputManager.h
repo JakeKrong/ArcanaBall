@@ -15,7 +15,6 @@ struct InputState {
 
 	//Window
 	bool windowFocused = true;
-	
 };
 
 

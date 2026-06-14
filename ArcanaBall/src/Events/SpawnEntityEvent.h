@@ -2,7 +2,7 @@
 #include "BaseEvent.h"
 #include <variant>
 
-struct SpawnEntityEvent : public BaseEvent {
+struct SpawnEntityEvent : BaseEvent {
 	enum class Type { Enemy, BloodEffect, Etc };
 	Type type;
 

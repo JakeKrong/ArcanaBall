@@ -1,5 +1,5 @@
 #include "AudioManager.h"
-#include "AudioAsset.h"
+#include "AudioEvent.h"
 #include "Types.h"
 
 #include <print>
@@ -20,7 +20,7 @@ void AudioManager::PreloadAudio() {
 		}
 	};
 
-	loadAudio(AudioAsset::TestAudio, "bounce");
+	loadAudio(AudioAsset::UI_ButtonClick, "Button_Click");
 }
 
 AudioID AudioManager::PlayAudio(AudioAsset asset, bool loop) {
@@ -64,7 +64,13 @@ void AudioManager::StopAllAudio() {
 	m_ActiveChannels.clear();
 }
 
-void AudioManager::UpdateChannels() {
+void AudioManager::UpdateChannels(EventQueue& eventQ) {
+
+	//Play queued audio events
+	for (auto event : eventQ.GetTEvents<AudioEvent>()) {
+		PlayAudio(event->asset, event->loop);
+	}
+
 	std::erase_if(m_ActiveChannels, [](ActiveChannel& channel) {
 		return channel.sound.getStatus() == sf::Sound::Status::Stopped;
 	});

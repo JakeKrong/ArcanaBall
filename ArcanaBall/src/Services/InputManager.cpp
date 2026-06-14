@@ -2,7 +2,6 @@
 
 void InputManager::Update(sf::RenderWindow& window) {
 	m_InputState.mousePos = sf::Mouse::getPosition(window); //Set clamp later
-
 }
 
 void InputManager::HandleEvent(const sf::Event& event) {

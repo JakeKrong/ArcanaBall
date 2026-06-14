@@ -65,7 +65,7 @@ void MainMenuState::Update(float deltaTime)
 	m_UISystem.Update(playerInput);
 }
 
-void MainMenuState::Render(sf::RenderWindow& window)
+void MainMenuState::Render(sf::RenderWindow& renderWindow)
 {
-	m_RenderSystem.Update(window);
+	m_RenderSystem.Update(renderWindow);
 }
