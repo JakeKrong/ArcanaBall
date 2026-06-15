@@ -11,34 +11,28 @@ void CollisionSystem::InitBlockGridMap() {
 
 	if (m_Entities.size() == 0) return;
 
+	auto& transCompArr = m_Registry->GetComponentArray<Transform>();
 	auto& colCompArr = m_Registry->GetComponentArray<Collider>();
 
 	//Sort initial m_Entities based on Collider Type enum
 	std::ranges::sort(m_Entities, {}, [&colCompArr](Entity ent) {
 		return colCompArr.GetTComponent(ent).colType;
-	});
+		});
 
 	//Iterate sorted vector to update tracker
-	for (int i = 0; i < m_Entities.size() - 1;  i++) {
-		Entity ent = m_Entities[i];
+	for (Entity ent : m_Entities) {
 		if (colCompArr.GetTComponent(ent).colType != ColliderType::Block) {
-			lastBlockEntIndex = i - 1;
 			break;
 		}
-	}
+		
+		const auto& trans = transCompArr.GetTComponent(ent);
 
-	//Build map/vector based on block location + size, then on Update() check ball/effects collider against map and handle
-	// Iterate m_Entities (until last block), map block location + size (logic to be decided)
-	
-}
+		auto posGridMapping = StageToGrid(trans.position);
 
-void CollisionSystem::UpdateLastblockInd() {
-	auto& colCompArr = m_Registry->GetComponentArray<Collider>();
-	for (int i = lastBlockEntIndex; i > 0; i--) {
-		if (colCompArr.GetTComponent(m_Entities[i]).colType == ColliderType::Ball) {
-			lastBlockEntIndex = i;
-			break;
-		}
+		assert(posGridMapping.x >= 0 && posGridMapping.x < COLS);
+		assert(posGridMapping.y >= 0 && posGridMapping.y < ROWS);
+
+		m_BlockGrid[posGridMapping.x][posGridMapping.y] = ent;
 	}
 }
 
@@ -46,7 +40,16 @@ void CollisionSystem::RegisterCollisionHandlers() {
 	Registry& regRef = *m_Registry;
 	m_CollisionHandlerMap.emplace(std::pair{ ColliderType::Ball, ColliderType::Block }, [registry = &regRef](Entity ball, Entity block, HitFromDir hitFrom)
 		{
-			// Handle Ball-on-Block collision
+			PhysicsEvent event;
+			event.ent = ball;
+			if (hitFrom == HitFromDir::Left || hitFrom == HitFromDir::Right) {
+				event.inverseX = true;
+			}
+			else {
+				event.inverseY = true;
+			}
+			event.nudgeWithDelta = true;
+			registry->GetEventQueue().Publish<PhysicsEvent>(event);
 			return;
 		}
 	);
@@ -81,6 +84,31 @@ void CollisionSystem::RegisterCollisionHandlers() {
 	);
 }
 
+std::array<Entity, 4> CollisionSystem::GetNearbyBlocks(const Transform& ballTransform) {
+	std::array<Entity, 4> candidates{ 0,0,0,0 };
+	int cnt = 0;
+
+	float radius = ballTransform.size.x / 2.0f;
+	sf::Vector2f center = ballTransform.position + sf::Vector2f{ radius, radius };
+
+	sf::Vector2i minGrid = StageToGrid({ center.x - radius, center.y - radius });
+	sf::Vector2i maxGrid = StageToGrid({ center.x + radius, center.y + radius });
+
+	int startX = std::max(0, minGrid.x);
+	int endX = std::min(COLS - 1, maxGrid.x);
+	int startY = std::max(0, minGrid.y);
+	int endY = std::min(ROWS - 1, maxGrid.y);
+
+	for (int y = startY; y <= endY; ++y) {
+		for (int x = startX; x <= endX; ++x) {	
+			if (m_BlockGrid[x][y] != 0 && cnt < 4) {
+				candidates[cnt++] = m_BlockGrid[x][y];
+			}
+		}
+	}
+	return candidates;
+}
+
 bool CollisionSystem::HasCollision(const ColliderBody& a, const ColliderBody& b, HitFromDir* hitDirInfo) {
 	bool hasHit = false;
 	//Rectangle-on-Rectangle Collision Check
@@ -99,7 +127,7 @@ bool CollisionSystem::HasCollision(const ColliderBody& a, const ColliderBody& b,
 
 		float dx = circleCenter.x - closestX;
 		float dy = circleCenter.y - closestY;
-		hasHit =  (dx * dx + dy * dy) <= (circleRadius * circleRadius);
+		hasHit = (dx * dx + dy * dy) <= (circleRadius * circleRadius);
 
 		if (hasHit && hitDirInfo) {
 			float distLeft = std::abs(closestX - rectAABB.left());
@@ -122,6 +150,7 @@ bool CollisionSystem::HasCollision(const ColliderBody& a, const ColliderBody& b,
 	return hasHit;
 }
 
+
 void CollisionSystem::Update() {
 	if (!m_Registry || m_Entities.size() == 0) {
 		return;
@@ -131,14 +160,26 @@ void CollisionSystem::Update() {
 	auto& colCompArr = m_Registry->GetComponentArray<Collider>();
 
 	//Start collision check iteration after last block index
-	for (int i = lastBlockEntIndex + 1; i < m_Entities.size(); i++) {
+	for (int i = 0; i < m_Entities.size(); i++) {
 		Entity ent = m_Entities[i];
 		ColliderType colType = colCompArr.GetTComponent(ent).colType;
 
 		//Only collision check needed is Ball on everthing, and effects on blocks
 		switch (colType) {
-		case(ColliderType::Ball):
+		case(ColliderType::Ball): 
+		{
 			//Check against GridMap for collision -> then handle BALL on block collision
+			const auto& nearbyBlocks = GetNearbyBlocks(transCompArr.GetTComponent(ent));
+
+			for (Entity block : nearbyBlocks) {
+				if (block == 0) continue;
+				const ColliderBody ballColBody{ colCompArr.GetTComponent(ent), transCompArr.GetTComponent(ent) };
+				const ColliderBody otherColBody{ colCompArr.GetTComponent(block), transCompArr.GetTComponent(block) };
+				HitFromDir hitDir;
+				if (HasCollision(ballColBody, otherColBody, &hitDir)) {
+					m_CollisionHandlerMap.at(std::pair{ ColliderType::Ball, ColliderType::Block })(ent, block, hitDir);
+				}
+			}
 
 			//Iterate over rest of the vector to handle each collision
 			for (int j = i + 1; j < m_Entities.size(); j++) {
@@ -155,7 +196,8 @@ void CollisionSystem::Update() {
 				}
 			}
 			break;
-		case(ColliderType::Effects): 
+		}
+		case(ColliderType::Effects):
 			//Check against GridMap for collision -> then handle EFFECTS on block collision
 			break;
 		}

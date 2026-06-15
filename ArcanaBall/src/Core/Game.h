@@ -20,6 +20,8 @@ public:
 	TextureManager& GetTextureManager();
 	AudioManager& GetAudioManager();
 
+	StageGridData& GetStageGridData(int);
+
 private:
 	Registry m_Registry;
 	sf::RenderWindow m_Window;
@@ -28,4 +30,6 @@ private:
 	InputManager m_InputManager;
 	TextureManager m_TextureManager;
 	AudioManager m_AudioManager;
+
+	std::unordered_map<int, StageGridData> m_LevelDataCache;
 };

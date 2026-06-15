@@ -19,6 +19,7 @@ SET (GAME_SOURCES
  "src/Services/InputManager.h" "src/Services/InputManager.cpp"
  "src/Services/TextureManager.h" "src/Services/TextureManager.cpp"
  "src/Services/AudioManager.h" "src/Services/AudioManager.cpp"
+ "src/Services/FileReader.cpp" "src/Services/FileReader.h"
 
  "src/System/Systems.h" "src/System/RenderSystem.h" "src/System/RenderSystem.cpp" 
  "src/System/UISystem.h" "src/System/UISystem.cpp" "src/System/CollisionSystem.h" "src/System/CollisionSystem.cpp"

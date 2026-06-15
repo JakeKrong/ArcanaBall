@@ -2,9 +2,9 @@
 #include "MainMenuState.h"
 #include "PlayingState.h"
 #include "GameStateEvent.h"
+#include "FileReader.h"
 
-//Testing
-#include <iostream>
+#include <cassert>
 
 Game::Game() :
 	m_Window(sf::RenderWindow(sf::VideoMode(DefaultResolution), "Arcana Ball"))
@@ -16,14 +16,15 @@ Game::Game() :
 void Game::Run() {
 	sf::Clock timer;
 
+	//Load Service Manager assets and Level Data
+	if (!FileReader::ReadLevelData(m_LevelDataCache)) return;
+	m_AudioManager.PreloadAudio();
+
 	//Set initial state
 	m_StateManager.ChangeState(std::make_unique<MainMenuState>(this));
-	//Load Service Manager assets
-	m_AudioManager.PreloadAudio();
 
 	while (m_Window.isOpen()) {
 		float deltaTime = timer.restart().asSeconds();
-		std::cout << deltaTime << "\n";
 		if (deltaTime > 0.1) deltaTime = 0.1; //Clamp deltaTime to max
 
 		//Poll and process game window events
@@ -44,7 +45,7 @@ void Game::Run() {
 		for (auto event : m_Registry.GetEventQueue().GetTEvents<GameStateEvent>()) {
 			if (event->type == GameStateEvent::Type::StartGame) {
 				m_Registry.ResetManagers();
-				m_StateManager.EnqueueChangeState(std::make_unique<PlayingState>(this));
+				m_StateManager.EnqueueChangeState(std::make_unique<PlayingState>(this, GetStageGridData(1)));
 				break;
 			}
 			else if (event->type == GameStateEvent::Type::EndGame) {
@@ -62,3 +63,8 @@ Registry& Game::GetRegistry() { return m_Registry; }
 InputManager& Game::GetInputManager() { return m_InputManager; }
 TextureManager& Game::GetTextureManager() { return m_TextureManager; }
 AudioManager& Game::GetAudioManager() { return m_AudioManager; }
+
+StageGridData& Game::GetStageGridData(int level) { 
+	assert(m_LevelDataCache.contains(level) && "Loading unknown level data!");
+	return m_LevelDataCache.at(level); 
+}

@@ -15,6 +15,24 @@ Entity Prefab::Ball(Registry& reg, TextureManager& textMn) {
 	return ball;
 }
 
+Entity Prefab::Brick(Registry& reg, TextureManager& textMn, sf::Vector2f position) {
+	Entity brick = reg.CreateEntity();
+	reg.AddComponentToEntity<Transform>(brick, position, sf::Vector2f{ 30,20 });
+	reg.AddComponentToEntity<Renderable>(brick, &textMn.Load("Brick"), RenderLayer::GameObjects);
+	reg.AddComponentToEntity<Collider>(brick, ColliderType::Block, ColliderShape::Rectangle);
+
+	return brick;
+}
+
+Entity Prefab::Wood(Registry& reg, TextureManager& textMn, sf::Vector2f position) {
+	Entity wood = reg.CreateEntity();
+	reg.AddComponentToEntity<Transform>(wood, position, sf::Vector2f{ 30,20 });
+	reg.AddComponentToEntity<Renderable>(wood, &textMn.Load("Wood"), RenderLayer::GameObjects);
+	reg.AddComponentToEntity<Collider>(wood, ColliderType::Block, ColliderShape::Rectangle);
+
+	return wood;
+}
+
 void Prefab::LevelBorders(Registry& reg, TextureManager& textMn) {
 	Entity topWall = reg.CreateEntity();
 	reg.AddComponentToEntity<Transform>(topWall,  sf::Vector2f{ 0,0 }, sf::Vector2f{1280,50});

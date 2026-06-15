@@ -2,8 +2,8 @@
 #include "ISystem.h"
 
 #include <unordered_map>
+#include <array>
 #include <functional>
-#include <optional>
 
 #include "Collider.h"
 #include "Transform.h"
@@ -38,24 +38,31 @@ struct PairHashing {
 };
 
 
-class CollisionSystem : public ISystem{
+class CollisionSystem : public ISystem {
 public:
 
 	void InitBlockGridMap();
-	void UpdateLastblockInd();
 	void RegisterCollisionHandlers();
-
+	std::array<Entity, 4> GetNearbyBlocks(const Transform&);
 	bool HasCollision(const ColliderBody&, const ColliderBody&, HitFromDir* = nullptr);
 
 	void Update();
 
 private:
 
-	int lastBlockEntIndex = -1, prevEntityCnt = 0, prevLastEntity = 0;
+	//Temp const (to be adjusted)
+	static constexpr int COLS = 15, ROWS = 10;
+	static constexpr float BLOCK_WIDTH = 30, BLOCK_HEIGHT = 20;
+	static constexpr float GRID_OFFSET_X = 400, GRID_OFFSET_Y = 300;
 
-	//Temp const
-	static constexpr int cols = 15, rows = 20;
-	Entity m_BlockGrid[cols][rows] = { 0 };
+	sf::Vector2i StageToGrid(sf::Vector2f position) const {
+		return {
+			static_cast<int>((position.x - GRID_OFFSET_X) / BLOCK_WIDTH),
+			static_cast<int>((position.y - GRID_OFFSET_Y) / BLOCK_HEIGHT)
+		};
+	}
+
+	Entity m_BlockGrid[COLS][ROWS] = { 0 };
 
 	std::unordered_map <std::pair<ColliderType, ColliderType>, std::function<void(Entity, Entity, HitFromDir)>, PairHashing> m_CollisionHandlerMap;
 };

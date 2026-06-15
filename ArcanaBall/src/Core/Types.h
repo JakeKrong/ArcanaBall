@@ -2,11 +2,15 @@
 #include <cstdint>
 #include <bitset>
 #include <memory>
+#include <array>
 
+// *** Game Configurations *** //
 #define TargetFixedUpdateFreq 144
 #define DefaultVolumeSetting 20
 #define DefaultResolution {1280, 720}
 
+
+// *** ECS Functionality *** //
 using Entity = std::uint8_t;
 using ComponentID = std::uint16_t;
 
@@ -30,3 +34,10 @@ template<typename T, typename... Args>
 Scope<T> CreateRef(Args&&... args) {
 	return std::make_shared<T>(std::forward<Args>(args)...);
 }
+
+// --- Gameplay Data --- //
+constexpr static int BLOCK_ROWS = 10, BLOCK_COLUMNS = 15;
+constexpr static int BLOCK_WIDTH = 30, BLOCK_HEIGHT = 20;
+static constexpr int GRID_OFFSET_X = 400, GRID_OFFSET_Y = 300;
+
+using StageGridData = std::array<std::array<std::uint8_t, BLOCK_COLUMNS>, BLOCK_ROWS>;

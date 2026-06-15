@@ -4,7 +4,7 @@
 
 class PlayingState : public IState {
 public:
-	explicit PlayingState(Game*);
+	explicit PlayingState(Game*, StageGridData& stageData);
 
 	void Enter() override;
 	void Exit() override;
@@ -12,9 +12,13 @@ public:
 	void Update(float) override;
 	void Render(sf::RenderWindow&) override;
 
+	void GenerateLevelBlocks();
+
 private:
 	RenderSystem& m_RenderSystem;
 	UISystem& m_UISystem;
 	CollisionSystem& m_CollisionSystem;
 	PhysicsSystem& m_PhysicsSystem;
+
+	StageGridData& m_StageGrid;
 };

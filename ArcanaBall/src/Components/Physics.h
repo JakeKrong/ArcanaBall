@@ -3,4 +3,5 @@
 
 struct Physics {
 	sf::Vector2f velocity{ 0, 0 };
+	//sf::Vector2f lastPos{ 0, 0 };
 };

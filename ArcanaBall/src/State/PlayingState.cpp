@@ -2,12 +2,13 @@
 #include "Game.h"
 #include "Prefabs.h"
 
-PlayingState::PlayingState(Game* game) :
+PlayingState::PlayingState(Game* game, StageGridData& stageData) :
 	IState(game),
 	m_RenderSystem(game->GetRegistry().RegisterSystem<RenderSystem>()),
 	m_UISystem(game->GetRegistry().RegisterSystem<UISystem>()),
 	m_CollisionSystem(game->GetRegistry().RegisterSystem<CollisionSystem>()),
-	m_PhysicsSystem(game->GetRegistry().RegisterSystem<PhysicsSystem>())
+	m_PhysicsSystem(game->GetRegistry().RegisterSystem<PhysicsSystem>()),
+	m_StageGrid(stageData)
 {}
 
 void PlayingState::Enter() {
@@ -50,12 +51,12 @@ void PlayingState::Enter() {
 	registry.SetSystemSignature<PhysicsSystem>(physSig);
 
 	//Set up level
+	GenerateLevelBlocks();
 	Prefab::LevelBorders(registry, m_Game->GetTextureManager());
 	Prefab::Ball(registry, m_Game->GetTextureManager());
 
 	m_CollisionSystem.RegisterCollisionHandlers();
 	m_CollisionSystem.InitBlockGridMap();
-
 }
 
 void PlayingState::Exit() {
@@ -72,4 +73,30 @@ void PlayingState::Update(float deltaTime) {
 
 void PlayingState::Render(sf::RenderWindow& renderWindow) {
 	m_RenderSystem.Update(renderWindow);
+}
+
+void PlayingState::GenerateLevelBlocks() {
+	Registry& registry = m_Game->GetRegistry();
+	TextureManager& textureMn= m_Game->GetTextureManager();
+
+	float yPosition = GRID_OFFSET_Y, xPosition = GRID_OFFSET_X;
+
+	for (auto rows : m_StageGrid) {
+		for (auto col : rows){
+			switch (col) {
+			case 1:
+				Prefab::Brick(registry, textureMn, sf::Vector2f{xPosition, yPosition});
+				break;
+			case 2:
+				Prefab::Wood(registry, textureMn, sf::Vector2f{ xPosition, yPosition });
+				break;
+			default:
+				continue;
+			}
+			xPosition += BLOCK_WIDTH;
+		}
+		//Reset X position, move Y postion down
+		xPosition = GRID_OFFSET_X;
+		yPosition += BLOCK_HEIGHT;
+	}
 }

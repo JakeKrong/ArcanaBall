@@ -4,5 +4,5 @@
 struct Transform {
 	sf::Vector2f position;
 	sf::Vector2f size;
-	float rotation;
+	float rotation{ 0 };
 };
