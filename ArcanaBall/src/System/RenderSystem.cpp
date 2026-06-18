@@ -17,7 +17,7 @@ void RenderSystem::Update(sf::RenderWindow& renderWindow){
 	//Sort array based on RenderLayer when change detecteed
 	if (m_PrevLastElement != m_Entities[m_Entities.size() - 1] || m_PrevElementCnt != m_Entities.size()) {
 
-		std::ranges::sort(m_Entities, {}, [&](Entity ent) { return m_Entities.at(ent); });
+		std::ranges::sort(m_Entities, {}, [&](Entity ent) { return rendCompArr.GetTComponent(ent).layer; });
 		m_PrevLastElement = m_Entities[m_Entities.size() - 1];
 		m_PrevElementCnt = m_Entities.size();
 	}
@@ -36,6 +36,12 @@ void RenderSystem::Update(sf::RenderWindow& renderWindow){
 			renderable.setRotation(sf::degrees(transComp.rotation));
 			renderable.setScale({ transComp.size.x / texture->getSize().x,
 								  transComp.size.y / texture->getSize().y });
+			if (rendComp.flipX) {
+				renderable.setTextureRect({
+					{ static_cast<int>(texture->getSize().x), 0 },
+					{ -static_cast<int>(texture->getSize().x), static_cast<int>(texture->getSize().y) }
+				});
+			}
 			renderWindow.draw(renderable);
 		}
 	}

@@ -40,17 +40,31 @@ void MainMenuState::Enter()
 
 	Entity background = registry.CreateEntity();
 	registry.AddComponentToEntity<Transform>(background, sf::Vector2f{ 0,0 }, sf::Vector2f(DefaultResolution));
-	registry.AddComponentToEntity<Renderable>(background, &m_Game->GetTextureManager().Load("Placeholder_Background"), RenderLayer::Background);
+	registry.AddComponentToEntity<Renderable>(background, &m_Game->GetTextureManager().Load("Forest_Background"), RenderLayer::Background);
+
+	Entity title = registry.CreateEntity();
+	registry.AddComponentToEntity<Transform>(title, sf::Vector2f{ 440,50 }, sf::Vector2f{ 400, 200});
+	registry.AddComponentToEntity<Renderable>(title, &m_Game->GetTextureManager().Load("Title_Art"), RenderLayer::Background);
 
 	Entity startBtn = registry.CreateEntity();
-	registry.AddComponentToEntity<Transform>(startBtn, sf::Vector2f{ 400,500 }, sf::Vector2f{ 200,100 });
-	registry.AddComponentToEntity<Renderable>(startBtn, &m_Game->GetTextureManager().Load("Button_StartGame_Transparent"), RenderLayer::UI);
-	registry.AddComponentToEntity<Button>(startBtn, ButtonAction::StartGame);
+	registry.AddComponentToEntity<Transform>(startBtn, sf::Vector2f{ 490,300 }, sf::Vector2f{ 300,50 });
+	registry.AddComponentToEntity<Renderable>(startBtn, &m_Game->GetTextureManager().Load("UI/Start"), RenderLayer::UI);
+	registry.AddComponentToEntity<Button>(startBtn, ButtonAction::StartGame, 1.f);
+
+	Entity selectStgBtn = registry.CreateEntity();
+	registry.AddComponentToEntity<Transform>(selectStgBtn, sf::Vector2f{ 490,400 }, sf::Vector2f{ 300,50 });
+	registry.AddComponentToEntity<Renderable>(selectStgBtn, &m_Game->GetTextureManager().Load("UI/Select_Level"), RenderLayer::UI);
+	registry.AddComponentToEntity<Button>(selectStgBtn, ButtonAction::StartGame, 1.f);
 
 	Entity closeBtn = registry.CreateEntity();
-	registry.AddComponentToEntity<Transform>(closeBtn, sf::Vector2f{ 700,500 }, sf::Vector2f{ 200,100 });
-	registry.AddComponentToEntity<Renderable>(closeBtn, &m_Game->GetTextureManager().Load("Button_QuitGame"), RenderLayer::UI);
+	registry.AddComponentToEntity<Transform>(closeBtn, sf::Vector2f{ 490,500 }, sf::Vector2f{ 300,50 });
+	registry.AddComponentToEntity<Renderable>(closeBtn, &m_Game->GetTextureManager().Load("UI/Quit_Game"), RenderLayer::UI);
 	registry.AddComponentToEntity<Button>(closeBtn, ButtonAction::ExitGame);
+
+	Entity guideBtn = registry.CreateEntity();
+	registry.AddComponentToEntity<Transform>(guideBtn, sf::Vector2f{ 850,350 }, sf::Vector2f{ 40,50 });
+	registry.AddComponentToEntity<Renderable>(guideBtn, &m_Game->GetTextureManager().Load("UI/Question"), RenderLayer::UI);
+	registry.AddComponentToEntity<Button>(guideBtn, ButtonAction::NoAction);
 }
 
 void MainMenuState::Exit()

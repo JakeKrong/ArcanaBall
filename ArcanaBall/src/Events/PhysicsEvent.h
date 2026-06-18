@@ -7,5 +7,5 @@ struct PhysicsEvent : BaseEvent {
 	sf::Vector2f vectorChange{ 0,0 };
 	bool inverseX = false;
 	bool inverseY = false;
-	bool nudgeWithDelta = false;
+	float setAngle = -1;
 };

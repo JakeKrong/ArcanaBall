@@ -11,6 +11,7 @@ enum RenderLayer : uint8_t{
 };
 
 struct Renderable {
+
 	const sf::Texture* texture = nullptr;
 	RenderLayer layer{ 0 };
 	bool visible{ true };
@@ -26,5 +27,4 @@ struct AnimationData {
 	int currentFrame = 1;
 	float timeSinceLastFrame = std::numeric_limits<float>::max();
 
-	//animationEvents and onAnimationEnd()
 };

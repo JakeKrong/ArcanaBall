@@ -14,16 +14,20 @@ SET (GAME_SOURCES
  "src/Core/AudioAsset.h"
 
  "src/Components/Component.h" "src/Components/Transform.h" "src/Components/Renderable.h"
- "src/Components/Button.h" "src/Components/Physics.h" "src/Components/StatusEffect.h" "src/Components/Collider.h"
+ "src/Components/Button.h" "src/Components/Physics.h" "src/Components/StatusEffect.h" 
+ "src/Components/Collider.h" "src/Components/Block.h" "src/Components/Child.h"
  
  "src/Services/InputManager.h" "src/Services/InputManager.cpp"
  "src/Services/TextureManager.h" "src/Services/TextureManager.cpp"
  "src/Services/AudioManager.h" "src/Services/AudioManager.cpp"
  "src/Services/FileReader.cpp" "src/Services/FileReader.h"
+ "src/System/BlockSystem.h" "src/System/BlockSystem.cpp" 
 
- "src/System/Systems.h" "src/System/RenderSystem.h" "src/System/RenderSystem.cpp" 
+ "src/System/Systems.h" 
+ "src/System/RenderSystem.h" "src/System/RenderSystem.cpp" 
  "src/System/UISystem.h" "src/System/UISystem.cpp" "src/System/CollisionSystem.h" "src/System/CollisionSystem.cpp"
- "src/System/PhysicsSystem.h" "src/System/PhysicsSystem.cpp" "src/System/StatusEffectSystem.h" "src/System/StatusEffectSystem.cpp"
+ "src/System/PhysicsSystem.h" "src/System/PhysicsSystem.cpp"
+ "src/System/HierarchySystem.h" "src/System/HierarchySystem.cpp"
 
  "src/State/IState.h"
  "src/State/MainMenuState.h" "src/State/MainMenuState.cpp"
@@ -32,6 +36,7 @@ SET (GAME_SOURCES
  "src/Events/BaseEvent.h"
  "src/Events/GameStateEvent.h" "src/Events/SpawnEntityEvent.h"
  "src/Events/AudioEvent.h" "src/Events/PhysicsEvent.h"
+ "src/Events/BlockCollisionEvent.h" "src/Events/EntityDestroyedEvent.h"
 )
 
 # Add source to this project's executable.

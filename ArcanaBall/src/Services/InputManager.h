@@ -6,15 +6,16 @@ struct InputState {
 	//Keyboard
 	bool activeFire = false; //Example
 	bool timeSlow = false;
-	bool pauseGame = false;
 
 	//Mouse
 	bool mouseClicked = false;
 	bool mouseReleased = false;
-	sf::Vector2i mousePos;
+	sf::Vector2f mousePos;
+	bool mouseWithinBounds = true;
 
-	//Window
-	bool windowFocused = true;
+	//Game State
+	bool pauseGame = false;
+	bool resumeGame = false;
 };
 
 
@@ -24,7 +25,7 @@ public:
 	void HandleEvent(const sf::Event&);
 
 	InputState& GetInputStates();
-	void ResetMouseClicked();
+	void ResetInputs();
 
 private:
 	InputState m_InputState;

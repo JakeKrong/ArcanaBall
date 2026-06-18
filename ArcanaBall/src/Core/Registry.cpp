@@ -19,7 +19,10 @@ Entity Registry::CreateEntity() {
 }
 
 void Registry::DestroyEntity(Entity ent) {
-	return m_EntManager->PushEntity(ent);
+	Signature sig = m_EntManager->GetEntSignature(ent);
+	m_EntManager->PushEntity(ent);
+	m_CompManager->DestroyEntComponents(ent, sig);
+	m_SysManager->EntityDestroyed(ent, sig);
 }
 
 EventQueue& Registry::GetEventQueue() {

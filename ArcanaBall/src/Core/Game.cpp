@@ -6,6 +6,9 @@
 
 #include <cassert>
 
+//Testing
+#include <iostream>
+
 Game::Game() :
 	m_Window(sf::RenderWindow(sf::VideoMode(DefaultResolution), "Arcana Ball"))
 {
@@ -43,19 +46,31 @@ void Game::Run() {
 
 		//Consume Game State Events
 		for (auto event : m_Registry.GetEventQueue().GetTEvents<GameStateEvent>()) {
-			if (event->type == GameStateEvent::Type::StartGame) {
+			auto stateEvent = event->type;
+			float eventPayload = static_cast<int>(event->payload);
+			switch(stateEvent) {
+			case(GameStateEvent::Type::StartGame):
 				m_Registry.ResetManagers();
-				m_StateManager.EnqueueChangeState(std::make_unique<PlayingState>(this, GetStageGridData(1)));
+				m_StateManager.EnqueueChangeState(std::make_unique<PlayingState>(this, eventPayload, GetStageGridData(eventPayload)));
 				break;
-			}
-			else if (event->type == GameStateEvent::Type::EndGame) {
+			case(GameStateEvent::Type::EndGame):
 				m_Window.close();
+				break;
+			case(GameStateEvent::Type::ContinueGame):
+				m_InputManager.GetInputStates().resumeGame = true;
+				break;
+			case(GameStateEvent::Type::MainMenu):
+				m_Registry.ResetManagers();
+				m_StateManager.EnqueueChangeState(std::make_unique<MainMenuState>(this));
 			}
 		}
 
 		//Clear input state and event queue
-		m_InputManager.ResetMouseClicked();
+		m_InputManager.ResetInputs();
 		m_Registry.GetEventQueue().ClearEvents();
+
+		//####### DEBBUGGING #######//
+		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Space)) std::cout<<"\n\n\n\n\n\n\n\n\n";
 	}
 }
 
@@ -68,3 +83,5 @@ StageGridData& Game::GetStageGridData(int level) {
 	assert(m_LevelDataCache.contains(level) && "Loading unknown level data!");
 	return m_LevelDataCache.at(level); 
 }
+
+void Game::SetMouseVisibility(bool visibility) { m_Window.setMouseCursorVisible(visibility); }

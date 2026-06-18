@@ -3,7 +3,7 @@
 #include "assert.h"
 
 EntityManager::EntityManager() {
-	for (int i = 0; i < ENTITY_CAP; i++) {
+	for (int i = 1; i <= ENTITY_CAP; i++) {
 		m_AvailableEntities.push(i);
 	}
 	m_EntSignatures.resize(ENTITY_CAP);

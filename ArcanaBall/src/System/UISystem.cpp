@@ -29,10 +29,19 @@ void UISystem::Update(const InputState& input){
 			if (buttonComp.isOnPress && input.mouseClicked) {
 				switch (buttonComp.buttonAction) {
 				case ButtonAction::StartGame:
-					m_Registry->GetEventQueue().Publish<GameStateEvent>(GameStateEvent::Type::StartGame);
+					m_Registry->GetEventQueue().Publish<GameStateEvent>({ GameStateEvent::Type::StartGame, buttonComp.buttonPayload });
 					break;
 				case ButtonAction::ExitGame:
 					m_Registry->GetEventQueue().Publish<GameStateEvent>(GameStateEvent::Type::EndGame);
+					break;
+				case ButtonAction::ResumeGame:
+					m_Registry->GetEventQueue().Publish<GameStateEvent>(GameStateEvent::Type::ContinueGame);
+					break;
+				case ButtonAction::MainMenu:
+					m_Registry->GetEventQueue().Publish<GameStateEvent>(GameStateEvent::Type::MainMenu);
+					break;
+				case ButtonAction::RestartGame:
+					m_Registry->GetEventQueue().Publish<GameStateEvent>({ GameStateEvent::Type::StartGame, buttonComp.buttonPayload });
 					break;
 				default:
 					break;

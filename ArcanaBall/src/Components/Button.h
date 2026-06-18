@@ -8,20 +8,20 @@ enum class ButtonAction : uint8_t {
 	StartGame,
 	ExitGame,
 	RestartGame,
-	ResumeGame
+	ResumeGame,
+	MainMenu
 };
-
-using ButtonPayload = std::variant<uint8_t>; //Adjust to actual payload later
 
 struct Button {
 
 	Button() = default;
 
-	Button(ButtonAction action) :
-		buttonAction(action)
+	Button(ButtonAction action, float payload = 0) :
+		buttonAction(action),
+		buttonPayload(payload)
 	{}
 
-	ButtonPayload buttonPayload{ uint8_t{ 0 } };
+	float buttonPayload{ 0 };
 	ButtonAction buttonAction{ ButtonAction::NoAction };
 	bool isOnPress{ true }; //On press or On release
 	bool isEnabled{ true };

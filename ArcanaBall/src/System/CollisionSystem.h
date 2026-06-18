@@ -13,7 +13,8 @@ enum class HitFromDir : uint8_t {
 	Top,
 	Bottom,
 	Left,
-	Right
+	Right,
+	Corner
 };
 
 struct ColliderBody {
@@ -21,7 +22,12 @@ struct ColliderBody {
 	Transform& transform;
 };
 
-struct AABB {
+struct CollisionDetails {
+	HitFromDir hitDir;
+	sf::Vector2f pointOfContact{ 0,0 };
+};
+
+struct RectAABB {
 	sf::Vector2f position;
 	sf::Vector2f size;
 
@@ -44,25 +50,20 @@ public:
 	void InitBlockGridMap();
 	void RegisterCollisionHandlers();
 	std::array<Entity, 4> GetNearbyBlocks(const Transform&);
-	bool HasCollision(const ColliderBody&, const ColliderBody&, HitFromDir* = nullptr);
+	bool HasCollision(const ColliderBody&, const ColliderBody&, CollisionDetails* = nullptr);
 
 	void Update();
 
 private:
-
-	//Temp const (to be adjusted)
-	static constexpr int COLS = 15, ROWS = 10;
-	static constexpr float BLOCK_WIDTH = 30, BLOCK_HEIGHT = 20;
-	static constexpr float GRID_OFFSET_X = 400, GRID_OFFSET_Y = 300;
 
 	sf::Vector2i StageToGrid(sf::Vector2f position) const {
 		return {
 			static_cast<int>((position.x - GRID_OFFSET_X) / BLOCK_WIDTH),
 			static_cast<int>((position.y - GRID_OFFSET_Y) / BLOCK_HEIGHT)
 		};
-	}
+	};
 
-	Entity m_BlockGrid[COLS][ROWS] = { 0 };
+	std::array<std::array<Entity, BLOCK_ROWS>, BLOCK_COLUMNS> m_BlockGrid{};
 
-	std::unordered_map <std::pair<ColliderType, ColliderType>, std::function<void(Entity, Entity, HitFromDir)>, PairHashing> m_CollisionHandlerMap;
+	std::unordered_map <std::pair<ColliderType, ColliderType>, std::function<void(Entity, Entity, CollisionDetails)>, PairHashing> m_CollisionHandlerMap;
 };

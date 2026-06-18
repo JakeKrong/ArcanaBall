@@ -1,25 +1,33 @@
 #include "InputManager.h"
 
 void InputManager::Update(sf::RenderWindow& window) {
-	m_InputState.mousePos = sf::Mouse::getPosition(window); //Set clamp later
+	if (m_InputState.mouseWithinBounds) m_InputState.mousePos = window.mapPixelToCoords(sf::Mouse::getPosition(window));
+
+	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Escape)) m_InputState.pauseGame = true;
 }
 
 void InputManager::HandleEvent(const sf::Event& event) {
 	if (event.is<sf::Event::MouseButtonPressed>()) {
 		if (event.getIf<sf::Event::MouseButtonPressed>()->button == sf::Mouse::Button::Left) {
-			GetInputStates().mouseClicked = true;
+			m_InputState.mouseClicked = true;
 		}
 	}
 	else if (event.is<sf::Event::MouseButtonReleased>()) {
 		if (event.getIf<sf::Event::MouseButtonReleased>()->button == sf::Mouse::Button::Left) {
-			GetInputStates().mouseReleased = true;
+			m_InputState.mouseReleased = true;
 		}
 	}
-	if (event.getIf<sf::Event::FocusGained>()) {
-		GetInputStates().windowFocused = true;
+	else if (event.getIf<sf::Event::FocusLost>()) {
+		m_InputState.pauseGame = true;
 	}
-	else if (event.getIf<sf::Event::FocusGained>()) {
-		GetInputStates().windowFocused = false;
+	else if (event.getIf<sf::Event::MouseLeft>()) {
+		m_InputState.mouseWithinBounds = false;
+	}
+	else if (event.getIf<sf::Event::MouseEntered>()) {
+		m_InputState.mouseWithinBounds = true;
+	}
+	else if (event.getIf<sf::Event::Resized>()) {
+		m_InputState.pauseGame = true;
 	}
 }
 
@@ -27,7 +35,8 @@ InputState& InputManager::GetInputStates() {
 	return m_InputState;
 }
 
-void InputManager::ResetMouseClicked() {
+void InputManager::ResetInputs() {
 	m_InputState.mouseClicked = false;
 	m_InputState.mouseReleased = false;
+	m_InputState.pauseGame = false;
 }

@@ -21,6 +21,7 @@ public:
 	AudioManager& GetAudioManager();
 
 	StageGridData& GetStageGridData(int);
+	void SetMouseVisibility(bool);
 
 private:
 	Registry m_Registry;

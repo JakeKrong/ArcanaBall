@@ -36,8 +36,8 @@ Scope<T> CreateRef(Args&&... args) {
 }
 
 // --- Gameplay Data --- //
-constexpr static int BLOCK_ROWS = 10, BLOCK_COLUMNS = 15;
-constexpr static int BLOCK_WIDTH = 30, BLOCK_HEIGHT = 20;
-static constexpr int GRID_OFFSET_X = 400, GRID_OFFSET_Y = 300;
+constexpr static int BLOCK_ROWS = 8, BLOCK_COLUMNS = 10;
+constexpr static int BLOCK_WIDTH = 60, BLOCK_HEIGHT = 30;
+constexpr static int GRID_OFFSET_X = 340, GRID_OFFSET_Y = 100;
 
 using StageGridData = std::array<std::array<std::uint8_t, BLOCK_COLUMNS>, BLOCK_ROWS>;

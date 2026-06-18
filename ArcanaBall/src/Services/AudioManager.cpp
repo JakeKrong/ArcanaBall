@@ -21,6 +21,7 @@ void AudioManager::PreloadAudio() {
 	};
 
 	loadAudio(AudioAsset::UI_ButtonClick, "Button_Click");
+	loadAudio(AudioAsset::FX_Slowmo, "Slow_Mo");
 }
 
 AudioID AudioManager::PlayAudio(AudioAsset asset, bool loop) {

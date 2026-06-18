@@ -18,4 +18,6 @@ public:
 private:
 	RenderSystem& m_RenderSystem;
 	UISystem& m_UISystem;
+
+	std::vector<Entity> m_OverlayEntities;
 };

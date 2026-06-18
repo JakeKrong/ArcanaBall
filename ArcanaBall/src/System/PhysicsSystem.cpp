@@ -19,7 +19,7 @@ void PhysicsSystem::Update(float deltaTime) {
 		physComp.velocity += event->vectorChange;
 		if (event->inverseX) physComp.velocity.x *= -1;
 		if (event->inverseY) physComp.velocity.y *= -1;
-		if (event->nudgeWithDelta) transformCompArr.GetTComponent(event->ent).position += physComp.velocity * (deltaTime/5.f);
+		if (event->setAngle != -1) physComp.velocity = sf::Vector2f{ physComp.velocity.length(), sf::Angle(sf::degrees(event->setAngle)) };
 	}
 
 	timeSinceFixedUpdate += deltaTime;
