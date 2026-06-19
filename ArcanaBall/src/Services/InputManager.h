@@ -10,6 +10,7 @@ struct InputState {
 	//Mouse
 	bool mouseClicked = false;
 	bool mouseReleased = false;
+	bool mouseHeld = false;
 	sf::Vector2f mousePos;
 	bool mouseWithinBounds = true;
 

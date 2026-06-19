@@ -37,7 +37,7 @@ SET (GAME_SOURCES
  "src/Events/GameStateEvent.h" "src/Events/SpawnEntityEvent.h"
  "src/Events/AudioEvent.h" "src/Events/PhysicsEvent.h"
  "src/Events/BlockCollisionEvent.h" "src/Events/EntityDestroyedEvent.h"
-)
+ "src/Events/MenuNavEvent.h" "src/Services/FontManager.h" "src/Services/FontManager.cpp")
 
 # Add source to this project's executable.
 add_executable (ArcanaBall "src/ArcanaBall.cpp" ${GAME_SOURCES})

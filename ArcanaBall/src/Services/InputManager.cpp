@@ -4,6 +4,7 @@ void InputManager::Update(sf::RenderWindow& window) {
 	if (m_InputState.mouseWithinBounds) m_InputState.mousePos = window.mapPixelToCoords(sf::Mouse::getPosition(window));
 
 	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Escape)) m_InputState.pauseGame = true;
+	if (sf::Mouse::isButtonPressed(sf::Mouse::Button::Left)) m_InputState.mouseHeld = true;
 }
 
 void InputManager::HandleEvent(const sf::Event& event) {

@@ -78,6 +78,7 @@ Registry& Game::GetRegistry() { return m_Registry; }
 InputManager& Game::GetInputManager() { return m_InputManager; }
 TextureManager& Game::GetTextureManager() { return m_TextureManager; }
 AudioManager& Game::GetAudioManager() { return m_AudioManager; }
+FontManager& Game::GetFontManager() { return m_FontManager; }
 
 StageGridData& Game::GetStageGridData(int level) { 
 	assert(m_LevelDataCache.contains(level) && "Loading unknown level data!");

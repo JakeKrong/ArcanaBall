@@ -67,14 +67,21 @@ void AudioManager::StopAllAudio() {
 
 void AudioManager::UpdateChannels(EventQueue& eventQ) {
 
+	//Check volume changed event
+	for (auto event : eventQ.GetTEvents<VolumeChangedEvent>()) {
+		m_AudioVolume = event->newVolume;
+		SetMusicVolume(m_AudioVolume);
+	}
+
 	//Play queued audio events
 	for (auto event : eventQ.GetTEvents<AudioEvent>()) {
 		PlayAudio(event->asset, event->loop);
 	}
 
+	//Clear up Finished Audio
 	std::erase_if(m_ActiveChannels, [](ActiveChannel& channel) {
 		return channel.sound.getStatus() == sf::Sound::Status::Stopped;
-	});
+		});
 };
 
 void AudioManager::PlayMusic(const std::string& filePath, bool loop) {
@@ -96,3 +103,5 @@ void AudioManager::StopMusic() {
 void AudioManager::SetMusicVolume(float volume) {
 	m_Music.setVolume(volume);
 }
+
+float AudioManager::getCurVolume() { return m_AudioVolume; }

@@ -65,7 +65,7 @@ public:
 	}
 
 	template<typename T>
-	bool EntityHasComponent(Entity ent) {
+	bool EntityHasComponent(const Entity& ent) {
 		Signature enttSig = m_EntManager->GetEntSignature(ent);
 		ComponentID compId = m_CompManager->GetComponentID<T>();
 		return (enttSig[compId]);

@@ -9,6 +9,6 @@ struct BlockDestroyed : BaseEvent {
 	sf::Vector2f blockPos{ 0, 0 };
 };
 
-struct DestroyChildEntity {
+struct DestroyChildEntity : BaseEvent {
 	Entity parentEntity{ 0 };
 };

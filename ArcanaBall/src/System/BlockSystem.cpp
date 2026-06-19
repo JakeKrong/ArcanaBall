@@ -43,5 +43,5 @@ void BlockSystem::Update() {
 		}
 	}
 
-	if (!m_Entities.size()) { m_Registry->GetEventQueue().Publish<GameStateEvent>({ GameStateEvent::Type::GameOver, 1.f }); }
+	if (!m_Entities.size()) { m_Registry->GetEventQueue().Publish<GameStateEvent>({ GameStateEvent::Type::GameOver, 1 }); }
 }

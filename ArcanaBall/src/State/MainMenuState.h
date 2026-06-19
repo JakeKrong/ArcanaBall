@@ -15,9 +15,12 @@ public:
 	void Update(float) override;
 	void Render(sf::RenderWindow&) override;
 
+	void SelectLevel();
+	void GameGuide();
+
 private:
 	RenderSystem& m_RenderSystem;
 	UISystem& m_UISystem;
 
-	std::vector<Entity> m_OverlayEntities;
+	std::vector<Entity> m_OverlayEnt;
 };

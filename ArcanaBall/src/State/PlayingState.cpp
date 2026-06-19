@@ -5,6 +5,9 @@
 #include "GameStateEvent.h"
 #include "AudioEvent.h"
 
+//TESTING
+#include <iostream>
+
 PlayingState::PlayingState(Game* game, int levelNumber, StageGridData& stageData) :
 	IState(game),
 	m_RenderSystem(game->GetRegistry().RegisterSystem<RenderSystem>()),
@@ -12,9 +15,10 @@ PlayingState::PlayingState(Game* game, int levelNumber, StageGridData& stageData
 	m_CollisionSystem(game->GetRegistry().RegisterSystem<CollisionSystem>()),
 	m_PhysicsSystem(game->GetRegistry().RegisterSystem<PhysicsSystem>()),
 	m_BlockSystem(game->GetRegistry().RegisterSystem<BlockSystem>()),
+	m_HierarchySystem(game->GetRegistry().RegisterSystem<HierarchySystem>()),
 	m_LevelData( {stageData, levelNumber  })
 {
-	m_LevelData.overlayEnt.reserve(10);
+	m_OverlayEnt.reserve(10);
 }
 
 void PlayingState::Enter() {
@@ -24,11 +28,13 @@ void PlayingState::Enter() {
 	//Register
 	registry.RegisterComponent<Transform>();
 	registry.RegisterComponent<Renderable>();
+	registry.RegisterComponent<RendText>();
 	registry.RegisterComponent<Button>();
 	registry.RegisterComponent<Collider>();
 	registry.RegisterComponent<Physics>();
 	registry.RegisterComponent<Block>();
 	registry.RegisterComponent<StatusEffect>();
+	registry.RegisterComponent<Child>();
 
 	// *** Systems ****//
 	//Set Registry
@@ -37,6 +43,7 @@ void PlayingState::Enter() {
 	m_CollisionSystem.SetRegistry(&m_Game->GetRegistry());
 	m_PhysicsSystem.SetRegistry(&m_Game->GetRegistry());
 	m_BlockSystem.SetRegistry(&m_Game->GetRegistry());
+	m_HierarchySystem.SetRegistry(&m_Game->GetRegistry());
 
 
 	//Set Signature
@@ -64,15 +71,23 @@ void PlayingState::Enter() {
 	blockSig.set(registry.GetComponentID<Block>());
 	registry.SetSystemSignature<BlockSystem>(blockSig);
 
+	Signature hierSig;
+	hierSig.set(registry.GetComponentID<Transform>());
+	hierSig.set(registry.GetComponentID<Child>());
+	registry.SetSystemSignature<HierarchySystem>(hierSig);
+
 	//Set up level
 	GenerateLevelBlocks();
 	Prefab::GameObject::LevelBorders(registry, m_Game->GetTextureManager());
 	Prefab::GameObject::KillZone(registry);
-	Prefab::GameObject::Ball(registry, m_Game->GetTextureManager());
 
-	//Set Paddle
-	m_LevelData.paddleEnt = Prefab::GameObject::Paddle(registry, m_Game->GetTextureManager());
+	Entity liveRemText = registry.CreateEntity();
+	registry.AddComponentToEntity<Transform>(liveRemText, sf::Vector2f{ 25,25 });
+	registry.AddComponentToEntity<Renderable>(liveRemText, nullptr, RenderLayer::UI);
+	registry.AddComponentToEntity<RendText>(liveRemText, RendText{ "Lives Remaining:", &m_Game->GetFontManager().GetFont("pala") });
 
+	m_StageEnts.lifeInd1Ent = Prefab::UI::LifeIndicator(registry, m_Game->GetTextureManager(), 1);
+	m_StageEnts.lifeInd2Ent = Prefab::UI::LifeIndicator(registry, m_Game->GetTextureManager(), 2);
 
 	Entity background = registry.CreateEntity();
 	registry.AddComponentToEntity<Transform>(background, sf::Vector2f{ 0,0 }, sf::Vector2f(DefaultResolution));
@@ -80,6 +95,11 @@ void PlayingState::Enter() {
 	Entity overlay = registry.CreateEntity();
 	registry.AddComponentToEntity<Transform>(overlay, sf::Vector2f{ 270,0 }, sf::Vector2f({ 720,720 }));
 	registry.AddComponentToEntity<Renderable>(overlay, &m_Game->GetTextureManager().Load("Overlay"), RenderLayer::Background);
+
+	//Set Ball and Paddle
+	m_StageEnts.ballEnt = Prefab::GameObject::Ball(registry, m_Game->GetTextureManager());
+	m_StageEnts.paddleEnt = Prefab::GameObject::Paddle(registry, m_Game->GetTextureManager());
+	AttachBallToPaddle();
 
 	m_CollisionSystem.RegisterCollisionHandlers();
 	m_CollisionSystem.InitBlockGridMap();
@@ -95,17 +115,29 @@ void PlayingState::Update(float deltaTime) {
 	auto& registry = m_Game->GetRegistry();
 
 	if (m_LevelData.gameOverEnqueued) {
-		if (m_LevelData.gameOver) {
-			m_UISystem.Update(playerInput);
-			return;
-		}
-		else if (m_LevelData.gameOverTimer > 0) {
+		if (m_LevelData.gameOverTimer > 0) {
 			m_LevelData.gameOverTimer -= deltaTime;
-			deltaTime *= (m_LevelData.gameOverTimer / 5);
+			deltaTime *= (m_LevelData.gameOverTimer / 2.5f);
+		}
+		else if (!m_LevelData.gameWon && m_LevelData.livesLeft > 0) {
+			m_LevelData.gameOverEnqueued = false;
+			m_LevelData.livesLeft -= 1;
+
+			if (m_LevelData.livesLeft == 1) registry.DestroyEntity(m_StageEnts.lifeInd2Ent);
+			else registry.DestroyEntity(m_StageEnts.lifeInd1Ent);
+
+			AttachBallToPaddle();
 		}
 		else {
-			m_LevelData.gameOver = true;
-			GameOver();
+			if (!m_LevelData.gameOver) {
+				if (m_LevelData.gameWon) GameWon();
+				else GameLost();
+				m_LevelData.gameOver = true;
+			}
+			else {
+				m_UISystem.Update(playerInput);
+				return;
+			}
 		}
 	}
 
@@ -117,15 +149,21 @@ void PlayingState::Update(float deltaTime) {
 		}
 
 		UpdatePaddle(playerInput);
+		if (playerInput.mouseClicked && m_LevelData.ballAttached) LaunchBall();
 		m_CollisionSystem.Update();
 		m_PhysicsSystem.Update(deltaTime);
 		m_BlockSystem.Update();
+		m_HierarchySystem.Update();
 
 		for (auto& event : registry.GetEventQueue().GetTEvents<GameStateEvent>()) {
 			if (event->type == GameStateEvent::Type::GameOver && !m_LevelData.gameOverEnqueued) {
 				m_LevelData.gameOverEnqueued = true;
-				m_LevelData.gameOverTimer = 3.f;
-				registry.GetEventQueue().Publish<AudioEvent>({AudioAsset::FX_Slowmo});
+				m_LevelData.gameOverTimer = 2.5f;
+				registry.GetEventQueue().Publish<AudioEvent>({AudioAsset::FX_Slowmo});		
+
+				if (event->payload == 1) { //Stage won
+					m_LevelData.gameWon = true;
+				}
 			}
 		}
 	}
@@ -174,14 +212,6 @@ void PlayingState::GenerateLevelBlocks() {
 	}
 }
 
-void PlayingState::UpdatePaddle(InputState& inputState) {
-	Transform& paddleTrans = m_Game->GetRegistry().GetComponentArray<Transform>().GetTComponent(m_LevelData.paddleEnt);
-	sf::Vector2f mousePos = inputState.mousePos;
-
-	//Clamp paddle position within world border
-	paddleTrans.position.x = std::min(980.f - paddleTrans.size.x ,std::max(275.f, mousePos.x));
-}
-
 void PlayingState::PauseGame() {
 	m_LevelData.gamePaused = true;
 
@@ -190,30 +220,33 @@ void PlayingState::PauseGame() {
 	Entity darkOverlay = registry.CreateEntity();
 	registry.AddComponentToEntity<Transform>(darkOverlay, Transform{ {0,0}, DefaultResolution });
 	registry.AddComponentToEntity<Renderable>(darkOverlay, &m_Game->GetTextureManager().Load("Overlay"), RenderLayer::UI);
-	m_LevelData.overlayEnt.push_back(darkOverlay);
+	m_OverlayEnt.push_back(darkOverlay);
 
 	Entity pauseTitle = registry.CreateEntity();
 	registry.AddComponentToEntity<Transform>(pauseTitle, sf::Vector2f{ 340,150 }, sf::Vector2f{ 600,50 });
 	registry.AddComponentToEntity<Renderable>(pauseTitle, &m_Game->GetTextureManager().Load("Game_Paused"), RenderLayer::UI);
-	m_LevelData.overlayEnt.push_back(pauseTitle);
+	m_OverlayEnt.push_back(pauseTitle);
 
 	Entity continueBtn = registry.CreateEntity();
 	registry.AddComponentToEntity<Transform>(continueBtn, sf::Vector2f{ 440,300 }, sf::Vector2f{ 400,50 });
 	registry.AddComponentToEntity<Renderable>(continueBtn, &m_Game->GetTextureManager().Load("UI/Continue"), RenderLayer::UI);
 	registry.AddComponentToEntity<Button>(continueBtn, ButtonAction::ResumeGame);
-	m_LevelData.overlayEnt.push_back(continueBtn);
+	m_OverlayEnt.push_back(continueBtn);
 
 	Entity restartBtn = registry.CreateEntity();
 	registry.AddComponentToEntity<Transform>(restartBtn, sf::Vector2f{ 390,400 }, sf::Vector2f{ 500,50 });
 	registry.AddComponentToEntity<Renderable>(restartBtn, &m_Game->GetTextureManager().Load("UI/Restart"), RenderLayer::UI);
-	registry.AddComponentToEntity<Button>(restartBtn, ButtonAction::RestartGame, 1.f);
-	m_LevelData.overlayEnt.push_back(restartBtn);
+	registry.AddComponentToEntity<Button>(restartBtn, ButtonAction::RestartGame, m_LevelData.levelNumber);
+	m_OverlayEnt.push_back(restartBtn);
 
 	Entity backToMenuBtn = registry.CreateEntity();
 	registry.AddComponentToEntity<Transform>(backToMenuBtn, sf::Vector2f{ 390,500 }, sf::Vector2f{ 500,50 });
 	registry.AddComponentToEntity<Renderable>(backToMenuBtn, &m_Game->GetTextureManager().Load("UI/Back_To_Main"), RenderLayer::UI);
 	registry.AddComponentToEntity<Button>(backToMenuBtn, ButtonAction::MainMenu);
-	m_LevelData.overlayEnt.push_back(backToMenuBtn);
+	m_OverlayEnt.push_back(backToMenuBtn);
+
+	auto volCtrlEntites = Prefab::UI::VolumeControl(registry, m_Game->GetTextureManager(), m_Game->GetAudioManager().getCurVolume());
+	m_OverlayEnt.insert(m_OverlayEnt.end(), volCtrlEntites.begin(), volCtrlEntites.end());
 
 	m_Game->SetMouseVisibility(true);
 }
@@ -222,14 +255,14 @@ void PlayingState::ResumeGame() {
 	m_LevelData.gamePaused = false;
 	Registry& registry = m_Game->GetRegistry();
 
-	for (Entity ent : m_LevelData.overlayEnt) {
+	for (Entity ent : m_OverlayEnt) {
 		registry.DestroyEntity(ent);
 	}
-	m_LevelData.overlayEnt.clear();
+	m_OverlayEnt.clear();
 	m_Game->SetMouseVisibility(false);
 }
 
-void PlayingState::GameOver() {
+void PlayingState::GameLost() {
 	Registry& registry = m_Game->GetRegistry();
 
 	Entity darkOverlay = registry.CreateEntity();
@@ -243,7 +276,7 @@ void PlayingState::GameOver() {
 	Entity restartLvlBtn = registry.CreateEntity();
 	registry.AddComponentToEntity<Transform>(restartLvlBtn, sf::Vector2f{ 390,300 }, sf::Vector2f{ 500,50 });
 	registry.AddComponentToEntity<Renderable>(restartLvlBtn, &m_Game->GetTextureManager().Load("UI/Restart"), RenderLayer::UI);
-	registry.AddComponentToEntity<Button>(restartLvlBtn, ButtonAction::StartGame, static_cast<float>(m_LevelData.levelNumber));
+	registry.AddComponentToEntity<Button>(restartLvlBtn, ButtonAction::StartGame, m_LevelData.levelNumber);
 
 	Entity backToMenuBtn = registry.CreateEntity();
 	registry.AddComponentToEntity<Transform>(backToMenuBtn, sf::Vector2f{ 390,400 }, sf::Vector2f{ 500,50 });
@@ -251,4 +284,69 @@ void PlayingState::GameOver() {
 	registry.AddComponentToEntity<Button>(backToMenuBtn, ButtonAction::MainMenu);
 
 	m_Game->SetMouseVisibility(true);
+}
+
+void PlayingState::GameWon() {
+	Registry& registry = m_Game->GetRegistry();
+
+	Entity darkOverlay = registry.CreateEntity();
+	registry.AddComponentToEntity<Transform>(darkOverlay, Transform{ {0,0}, DefaultResolution });
+	registry.AddComponentToEntity<Renderable>(darkOverlay, &m_Game->GetTextureManager().Load("Overlay"), RenderLayer::UI);
+
+	Entity stageClearedTitle = registry.CreateEntity();
+	registry.AddComponentToEntity<Transform>(stageClearedTitle, sf::Vector2f{ 340,150 }, sf::Vector2f{ 600,50 });
+	registry.AddComponentToEntity<Renderable>(stageClearedTitle, &m_Game->GetTextureManager().Load("Stage_Cleared"), RenderLayer::UI);
+
+	if (m_LevelData.levelNumber < 4) {
+		Entity nextLvlBtn = registry.CreateEntity();
+		registry.AddComponentToEntity<Transform>(nextLvlBtn, sf::Vector2f{ 390,300 }, sf::Vector2f{ 500,50 });
+		registry.AddComponentToEntity<Renderable>(nextLvlBtn, &m_Game->GetTextureManager().Load("UI/Next_Level"), RenderLayer::UI);
+		registry.AddComponentToEntity<Button>(nextLvlBtn, ButtonAction::StartGame, m_LevelData.levelNumber + 1);
+	}
+
+	Entity restartLvlBtn = registry.CreateEntity();
+	registry.AddComponentToEntity<Transform>(restartLvlBtn, sf::Vector2f{ 390,400 }, sf::Vector2f{ 500,50 });
+	registry.AddComponentToEntity<Renderable>(restartLvlBtn, &m_Game->GetTextureManager().Load("UI/Restart"), RenderLayer::UI);
+	registry.AddComponentToEntity<Button>(restartLvlBtn, ButtonAction::StartGame, m_LevelData.levelNumber);
+
+	Entity backToMenuBtn = registry.CreateEntity();
+	registry.AddComponentToEntity<Transform>(backToMenuBtn, sf::Vector2f{ 390,500 }, sf::Vector2f{ 500,50 });
+	registry.AddComponentToEntity<Renderable>(backToMenuBtn, &m_Game->GetTextureManager().Load("UI/Back_To_Main"), RenderLayer::UI);
+	registry.AddComponentToEntity<Button>(backToMenuBtn, ButtonAction::MainMenu);
+
+	m_Game->SetMouseVisibility(true);
+}
+
+void PlayingState::UpdatePaddle(InputState& inputState) {
+	Transform& paddleTrans = m_Game->GetRegistry().GetComponentArray<Transform>().GetTComponent(m_StageEnts.paddleEnt);
+	sf::Vector2f mousePos = inputState.mousePos;
+
+	//Clamp paddle position within world border
+	paddleTrans.position.x = std::min(980.f - paddleTrans.size.x, std::max(275.f, mousePos.x));
+}
+
+void PlayingState::AttachBallToPaddle() {
+	Registry& registry = m_Game->GetRegistry();
+	Transform& paddleTrans = registry.GetEntityComponent<Transform>(m_StageEnts.paddleEnt);
+	Transform& ballTrans = registry.GetEntityComponent<Transform>(m_StageEnts.ballEnt);
+	
+	registry.AddComponentToEntity<Child>(m_StageEnts.ballEnt, m_StageEnts.paddleEnt,
+		sf::Vector2f{ (paddleTrans.size.x / 2) - (ballTrans.size.x / 2), -25 });
+
+	m_LevelData.ballAttached = true;
+}
+
+void PlayingState::LaunchBall() {
+	Registry& registry = m_Game->GetRegistry();
+	m_LevelData.ballAttached = false;
+	
+	registry.RemoveComponentFromEntity<Child>(m_StageEnts.ballEnt);
+	float ballSpeed = 800.f;
+
+	Transform& ballTrans = registry.GetEntityComponent<Transform>(m_StageEnts.ballEnt);
+	//Launch ball very slightly left or right-wards to prevent continuous straight bouncing
+	float launchAngle = static_cast<int>(ballTrans.position.x) % 2 == 0 ? 269.95 : 270.05;
+
+	registry.AddComponentToEntity<Physics>(m_StageEnts.ballEnt,
+		sf::Vector2f{ ballSpeed, sf::Angle(sf::degrees(launchAngle)) });
 }

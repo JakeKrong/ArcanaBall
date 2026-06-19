@@ -32,7 +32,7 @@ public:
     void StopMusic();
     void SetMusicVolume(float);
 
-    //void AudioVolumeChanged(float);
+    float getCurVolume();
 
 private:
     static constexpr size_t MAX_AUDIO_CHANNELS = 64;

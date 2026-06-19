@@ -2,10 +2,12 @@
 #include <SFML/Graphics/RenderWindow.hpp>
 
 #include "Registry.h"
+
 #include "StateManager.h"
 #include "InputManager.h"
 #include "TextureManager.h"
 #include "AudioManager.h"
+#include "FontManager.h"
 
 class Game {
 public:
@@ -19,6 +21,7 @@ public:
 	InputManager& GetInputManager();
 	TextureManager& GetTextureManager();
 	AudioManager& GetAudioManager();
+	FontManager& GetFontManager();
 
 	StageGridData& GetStageGridData(int);
 	void SetMouseVisibility(bool);
@@ -31,6 +34,7 @@ private:
 	InputManager m_InputManager;
 	TextureManager m_TextureManager;
 	AudioManager m_AudioManager;
+	FontManager m_FontManager;
 
 	std::unordered_map<int, StageGridData> m_LevelDataCache;
 };

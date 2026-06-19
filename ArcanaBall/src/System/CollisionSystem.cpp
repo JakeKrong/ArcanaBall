@@ -145,6 +145,7 @@ void CollisionSystem::RegisterCollisionHandlers() {
 	m_CollisionHandlerMap.emplace(std::pair{ ColliderType::Ball, ColliderType::OutZone }, [registry = &regRef](Entity ball, Entity outZone, CollisionDetails colDet)
 		{
 			registry->GetEventQueue().Publish<GameStateEvent>({ GameStateEvent::Type::GameOver });
+			registry->GetEntityComponent<Transform>(ball).position.y = 1000;
 		}
 	);
 	m_CollisionHandlerMap.emplace(std::pair{ ColliderType::Effects, ColliderType::Block }, [registry = &regRef](Entity effect, Entity block, CollisionDetails colDet)

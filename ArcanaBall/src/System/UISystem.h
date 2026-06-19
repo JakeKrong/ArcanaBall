@@ -7,4 +7,6 @@
 class UISystem : public ISystem {
 public:
 	void Update(const InputState&);
+
+	void SetButtonsEnabled(bool);
 };

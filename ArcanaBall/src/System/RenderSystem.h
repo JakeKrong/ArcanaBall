@@ -8,5 +8,5 @@ public:
 
 private:
 	Entity m_PrevLastElement = 0;
-	int m_PrevElementCnt = 0;
+	//int m_PrevElementCnt = 0;
 };

@@ -12,3 +12,11 @@ struct AudioEvent : BaseEvent {
 	AudioAsset asset;
 	bool loop;
 };
+
+struct VolumeChangedEvent : BaseEvent {
+	VolumeChangedEvent(float volume) :
+		newVolume(volume)
+	{}
+
+	float newVolume{ 0 };
+};

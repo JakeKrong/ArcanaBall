@@ -4,25 +4,31 @@
 
 enum class ButtonAction : uint8_t {
 	NoAction,
-	//State Control
+	//Game State Control
 	StartGame,
 	ExitGame,
 	RestartGame,
 	ResumeGame,
-	MainMenu
+	//Main Menu Navigation
+	MainMenu,
+	CloseMenuOverlay,
+	SelectLevel,
+	OpenGuide,
+	//Volume Control
+	AdjustVolume
 };
 
 struct Button {
 
 	Button() = default;
 
-	Button(ButtonAction action, float payload = 0) :
+	Button(ButtonAction action, int payload = 0) :
 		buttonAction(action),
 		buttonPayload(payload)
 	{}
 
-	float buttonPayload{ 0 };
+	int buttonPayload{ 0 };
 	ButtonAction buttonAction{ ButtonAction::NoAction };
-	bool isOnPress{ true }; //On press or On release
 	bool isEnabled{ true };
+	bool checkHold{ false }; //Perform check/action on mouse hold
 };

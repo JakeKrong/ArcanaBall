@@ -6,7 +6,8 @@
 
 namespace Prefab{
 	namespace UI {
-		Entity Button(Registry&, TextureManager&);
+		std::array<Entity, 3> VolumeControl(Registry&, TextureManager&, float);
+		Entity LifeIndicator(Registry&, TextureManager&, int);
 	}
 	
 	namespace GameObject {

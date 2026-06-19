@@ -1,8 +1,29 @@
 #include "Prefabs.h"
 #include "Registry.h"
 
-Entity Prefab::UI::Button(Registry& reg, TextureManager& textMn) {
-	return 1;
+std::array<Entity, 3> Prefab::UI::VolumeControl(Registry& reg, TextureManager& textMn, float currVolume) {
+	Entity volumeIcon = reg.CreateEntity();
+	reg.AddComponentToEntity<Transform>(volumeIcon, sf::Vector2f{ 960,25 }, sf::Vector2f{ 50,50 });
+	reg.AddComponentToEntity<Renderable>(volumeIcon, &textMn.Load("UI/Volume"), RenderLayer::UI);
+
+	Entity volumeSlider = reg.CreateEntity();
+	reg.AddComponentToEntity<Transform>(volumeSlider, sf::Vector2f{ 1025,35 }, sf::Vector2f{ 180,30 });
+	reg.AddComponentToEntity<Renderable>(volumeSlider, &textMn.Load("UI/Slider"), RenderLayer::UI);
+
+	Entity sliderButton = reg.CreateEntity();
+	float currSliderX = 1035.f + (currVolume / DefaultVolumeSetting * 75.f);
+	reg.AddComponentToEntity<Transform>(sliderButton, sf::Vector2f{ currSliderX,35 }, sf::Vector2f{ 15,22 });
+	reg.AddComponentToEntity<Renderable>(sliderButton, &textMn.Load("UI/Slider_Butt"), RenderLayer::UI);
+	reg.AddComponentToEntity<Button>(sliderButton, ButtonAction::AdjustVolume);
+
+	return { volumeIcon, volumeSlider, sliderButton };
+}
+
+Entity Prefab::UI::LifeIndicator(Registry& reg, TextureManager& textMn, int numbering) {
+	Entity lifeInd = reg.CreateEntity();
+	reg.AddComponentToEntity<Transform>(lifeInd, numbering == 1 ? sf::Vector2f{ 30,65 } : sf::Vector2f{ 60,65 }, sf::Vector2f{ 25, 25 });
+	reg.AddComponentToEntity<Renderable>(lifeInd, &textMn.Load("GameObject/Ball"), RenderLayer::UI);
+	return lifeInd;
 }
 
 Entity Prefab::GameObject::Ball(Registry& reg, TextureManager& textMn) {
@@ -10,8 +31,8 @@ Entity Prefab::GameObject::Ball(Registry& reg, TextureManager& textMn) {
 	reg.AddComponentToEntity<Transform>(ball, sf::Vector2f{ 640,560 }, sf::Vector2f{ 20,20 });
 	reg.AddComponentToEntity<Renderable>(ball, &textMn.Load("GameObject/Ball"), RenderLayer::GameObjects);
 	reg.AddComponentToEntity<Collider>(ball, ColliderType::Ball, ColliderShape::Circle);
-	reg.AddComponentToEntity<Physics>(ball, sf::Vector2f{ 600,600 });
 	reg.AddComponentToEntity<StatusEffect>(ball, ElemInfusion::None);
+	reg.AddComponentToEntity<Child>(ball, Entity{ 0 });
 
 	return ball;
 }
@@ -95,7 +116,7 @@ void Prefab::GameObject::LevelBorders(Registry& reg, TextureManager& textMn) {
 
 Entity Prefab::GameObject::KillZone(Registry& reg) {
 	Entity killZone = reg.CreateEntity();
-	reg.AddComponentToEntity<Transform>(killZone, sf::Vector2f{250,720}, sf::Vector2f{ 755, 200 });
+	reg.AddComponentToEntity<Transform>(killZone, sf::Vector2f{ 250,730 }, sf::Vector2f{ 755, 25 });
 	reg.AddComponentToEntity<Collider>(killZone, ColliderType::OutZone, ColliderShape::Rectangle);
 
 	return killZone;
