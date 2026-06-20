@@ -18,6 +18,10 @@ void InputManager::HandleEvent(const sf::Event& event) {
 			m_InputState.mouseReleased = true;
 		}
 	}
+	else if (event.is<sf::Event::KeyPressed>()) {
+		if (event.getIf<sf::Event::KeyPressed>()->code == sf::Keyboard::Key::Space)
+		m_InputState.activeTimeSlow = true;
+	}
 	else if (event.getIf<sf::Event::FocusLost>()) {
 		m_InputState.pauseGame = true;
 	}
@@ -40,4 +44,6 @@ void InputManager::ResetInputs() {
 	m_InputState.mouseClicked = false;
 	m_InputState.mouseReleased = false;
 	m_InputState.pauseGame = false;
+
+	m_InputState.activeTimeSlow = false;
 }

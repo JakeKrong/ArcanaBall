@@ -5,7 +5,7 @@
 struct InputState {
 	//Keyboard
 	bool activeFire = false; //Example
-	bool timeSlow = false;
+	bool activeTimeSlow = false;
 
 	//Mouse
 	bool mouseClicked = false;

@@ -2,7 +2,9 @@
 
 enum class ElemInfusion : uint8_t {
 	None,
-	Flame
+	Flame,
+	Ice,
+	Lightning
 };
 
 struct StatusEffect {

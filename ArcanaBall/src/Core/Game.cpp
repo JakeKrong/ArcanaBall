@@ -70,7 +70,7 @@ void Game::Run() {
 		m_Registry.GetEventQueue().ClearEvents();
 
 		//####### DEBBUGGING #######//
-		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Space)) std::cout<<"\n\n\n\n\n\n\n\n\n";
+		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Space)) std::cout<<"\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n";
 	}
 }
 

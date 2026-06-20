@@ -1,15 +1,18 @@
 #pragma once
+#include "StatusEffect.h"
+#include <bitset>
 
 enum class BlockType {
-	Stone,
+	Stone, //Default
 	Wood,
 	Brick,
 	Steel
 };
 
 struct Block {
-	BlockType blockType;
-	float durabilty = 1;
+	using Resistances = std::bitset<3>;
 
-	//bool isMarkedForDestruction = false;
+	BlockType blockType = BlockType::Stone;
+	float durability = 1.f;
+	Resistances blockResist{};
 };

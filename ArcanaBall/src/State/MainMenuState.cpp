@@ -26,6 +26,7 @@ void MainMenuState::Enter()
 	registry.RegisterComponent<Renderable>();
 	registry.RegisterComponent<RendText>();
 	registry.RegisterComponent<Button>();
+	registry.RegisterComponent<AnimationData>();
 
 	// *** Systems ****//
 	//Set Registry
@@ -73,7 +74,7 @@ void MainMenuState::Enter()
 
 	Prefab::UI::VolumeControl(registry, m_Game->GetTextureManager(), m_Game->GetAudioManager().getCurVolume());
 
-	//m_Game->GetAudioManager().PlayMusic("Rivellon_8bit");
+	m_Game->GetAudioManager().PlayMusic("Rivellon_8bit");
 }
 
 void MainMenuState::Exit()

@@ -75,7 +75,7 @@ Entity Prefab::GameObject::Wood(Registry& reg, TextureManager& textMn, sf::Vecto
 	reg.AddComponentToEntity<Transform>(wood, position, sf::Vector2f{ BLOCK_WIDTH,BLOCK_HEIGHT });
 	reg.AddComponentToEntity<Renderable>(wood, &textMn.Load("GameObject/Wood"), RenderLayer::GameObjects);
 	reg.AddComponentToEntity<Collider>(wood, ColliderType::Block, ColliderShape::Rectangle);
-	reg.AddComponentToEntity<Block>(wood, BlockType::Brick, 2.f);
+	reg.AddComponentToEntity<Block>(wood, BlockType::Wood, 2.f);
 
 	return wood;
 }
@@ -85,9 +85,19 @@ Entity Prefab::GameObject::Steel(Registry& reg, TextureManager& textMn, sf::Vect
 	reg.AddComponentToEntity<Transform>(steel, position, sf::Vector2f{ BLOCK_WIDTH,BLOCK_HEIGHT });
 	reg.AddComponentToEntity<Renderable>(steel, &textMn.Load("GameObject/Steel"), RenderLayer::GameObjects);
 	reg.AddComponentToEntity<Collider>(steel, ColliderType::Block, ColliderShape::Rectangle);
-	reg.AddComponentToEntity<Block>(steel, BlockType::Brick, 10.f);
+	reg.AddComponentToEntity<Block>(steel, BlockType::Steel, 10.f);
 
 	return steel;
+}
+
+// Block breaking effects
+Entity Prefab::GameObject::WoodBreak(Registry& reg, TextureManager& textMn, sf::Vector2f position) {
+	Entity woodBreak = reg.CreateEntity();
+	reg.AddComponentToEntity<Transform>(woodBreak, position, sf::Vector2f{ BLOCK_WIDTH,BLOCK_HEIGHT });
+	reg.AddComponentToEntity<Renderable>(woodBreak, &textMn.Load("GameObject/Wood_Break"), RenderLayer::GameObjects);
+	reg.AddComponentToEntity<AnimationData>(woodBreak, sf::Vector2i{ 2,1 }, 2, .1f, false);
+
+	return woodBreak;
 }
 
 void Prefab::GameObject::LevelBorders(Registry& reg, TextureManager& textMn) {

@@ -19,6 +19,8 @@ namespace Prefab{
 		Entity Wood(Registry&, TextureManager&, sf::Vector2f);
 		Entity Steel(Registry&, TextureManager&, sf::Vector2f);
 
+		Entity WoodBreak(Registry&, TextureManager&, sf::Vector2f);
+
 		void LevelBorders(Registry&, TextureManager&);
 		Entity KillZone(Registry&);
 	}

@@ -2,6 +2,7 @@
 #include "Game.h"
 #include "Prefabs.h"
 
+#include "SpawnEntityEvent.h"
 #include "GameStateEvent.h"
 #include "AudioEvent.h"
 
@@ -16,6 +17,7 @@ PlayingState::PlayingState(Game* game, int levelNumber, StageGridData& stageData
 	m_PhysicsSystem(game->GetRegistry().RegisterSystem<PhysicsSystem>()),
 	m_BlockSystem(game->GetRegistry().RegisterSystem<BlockSystem>()),
 	m_HierarchySystem(game->GetRegistry().RegisterSystem<HierarchySystem>()),
+	m_AnimationSystem(game->GetRegistry().RegisterSystem<AnimationSystem>()),
 	m_LevelData( {stageData, levelNumber  })
 {
 	m_OverlayEnt.reserve(10);
@@ -35,6 +37,7 @@ void PlayingState::Enter() {
 	registry.RegisterComponent<Block>();
 	registry.RegisterComponent<StatusEffect>();
 	registry.RegisterComponent<Child>();
+	registry.RegisterComponent<AnimationData>();
 
 	// *** Systems ****//
 	//Set Registry
@@ -44,6 +47,7 @@ void PlayingState::Enter() {
 	m_PhysicsSystem.SetRegistry(&m_Game->GetRegistry());
 	m_BlockSystem.SetRegistry(&m_Game->GetRegistry());
 	m_HierarchySystem.SetRegistry(&m_Game->GetRegistry());
+	m_AnimationSystem.SetRegistry(&m_Game->GetRegistry());
 
 
 	//Set Signature
@@ -75,6 +79,12 @@ void PlayingState::Enter() {
 	hierSig.set(registry.GetComponentID<Transform>());
 	hierSig.set(registry.GetComponentID<Child>());
 	registry.SetSystemSignature<HierarchySystem>(hierSig);
+
+	Signature animSig;
+	animSig.set(registry.GetComponentID<Transform>());
+	animSig.set(registry.GetComponentID<Renderable>());
+	animSig.set(registry.GetComponentID<AnimationData>());
+	registry.SetSystemSignature<AnimationSystem>(animSig);
 
 	//Set up level
 	GenerateLevelBlocks();
@@ -117,7 +127,7 @@ void PlayingState::Update(float deltaTime) {
 	if (m_LevelData.gameOverEnqueued) {
 		if (m_LevelData.gameOverTimer > 0) {
 			m_LevelData.gameOverTimer -= deltaTime;
-			deltaTime *= (m_LevelData.gameOverTimer / 2.5f);
+			deltaTime *= (m_LevelData.gameOverTimer / 5.f);
 		}
 		else if (!m_LevelData.gameWon && m_LevelData.livesLeft > 0) {
 			m_LevelData.gameOverEnqueued = false;
@@ -154,11 +164,19 @@ void PlayingState::Update(float deltaTime) {
 		m_PhysicsSystem.Update(deltaTime);
 		m_BlockSystem.Update();
 		m_HierarchySystem.Update();
+		m_AnimationSystem.Update(deltaTime);
 
+		for (auto& event : registry.GetEventQueue().GetTEvents<SpawnEffectsEvent>()) {
+			switch (event->type) {
+			case(SpawnEffectsEvent::EffectType::WoodBreak):
+				Prefab::GameObject::WoodBreak(registry, m_Game->GetTextureManager(), event->payload);
+				break;
+			}
+		}
 		for (auto& event : registry.GetEventQueue().GetTEvents<GameStateEvent>()) {
 			if (event->type == GameStateEvent::Type::GameOver && !m_LevelData.gameOverEnqueued) {
 				m_LevelData.gameOverEnqueued = true;
-				m_LevelData.gameOverTimer = 2.5f;
+				m_LevelData.gameOverTimer = 2.f;
 				registry.GetEventQueue().Publish<AudioEvent>({AudioAsset::FX_Slowmo});		
 
 				if (event->payload == 1) { //Stage won

@@ -1,9 +1,11 @@
 #include "BlockSystem.h"
 #include "Registry.h"
+#include "Prefabs.h"
 
 #include "Block.h"
 #include "BlockCollisionEvent.h"
 #include "EntityDestroyedEvent.h"
+#include "SpawnEntityEvent.h"
 #include "GameStateEvent.h"
 
 void BlockSystem::Update() {
@@ -16,30 +18,34 @@ void BlockSystem::Update() {
 		auto& statusEffComp = statusEffCompArr.GetTComponent(event->blockEntity);
 
 		switch (blockComp.blockType) {
+			blockComp.durability -= 1;
 		case (BlockType::Stone):
-			blockComp.durabilty -= 1;
+			blockComp.durability -= 1;
 			break;
 		case (BlockType::Wood):
-			blockComp.durabilty -= 1;
+			blockComp.durability -= 1;
+			if (blockComp.durability <= 0) {
+				m_Registry->GetEventQueue().Publish<SpawnEffectsEvent>({SpawnEffectsEvent::EffectType::WoodBreak,  
+					m_Registry->GetEntityComponent<Transform>(event->blockEntity).position});
+			}
 			break;
 		case (BlockType::Brick):
-			blockComp.durabilty -= 1;
+			blockComp.durability -= 1;
 			break;
 		case (BlockType::Steel):
-			blockComp.durabilty -= 1;
+			blockComp.durability -= 1;
 			break;
 		default:
-			blockComp.durabilty -= 1;
+			blockComp.durability -= 1;
 			break;
 		}
 	}
 
 	for (Entity ent : m_Entities) {
 		auto& blockComp = blockCompArr.GetTComponent(ent);
-		if (blockComp.durabilty <= 0) {
+		if (blockComp.durability <= 0) {
 			m_Registry->GetEventQueue().PublishDeferred<BlockDestroyed>({ m_Registry->GetEntityComponent<Transform>(ent).position });
 			m_Registry->DestroyEntity(ent);
-
 		}
 	}
 

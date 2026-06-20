@@ -5,3 +5,4 @@
 #include "PhysicsSystem.h"
 #include "BlockSystem.h"
 #include "HierarchySystem.h"
+#include "AnimationSystem.h"

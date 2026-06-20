@@ -32,6 +32,7 @@ private:
 	PhysicsSystem& m_PhysicsSystem;
 	BlockSystem& m_BlockSystem;
 	HierarchySystem& m_HierarchySystem;
+	AnimationSystem& m_AnimationSystem;
 
 	struct LevelData {
 		StageGridData& stageGrid;

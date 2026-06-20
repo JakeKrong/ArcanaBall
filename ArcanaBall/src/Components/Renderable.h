@@ -32,13 +32,3 @@ struct RendText {
 	sf::Color color = sf::Color::White;
 	int size = 24;
 };
-
-struct AnimationData {
-	sf::IntRect activeSprite{}; //Check if can use diffenrent data type
-	sf::Vector2i spriteSheetDim{ 1,1 };
-
-	float frameTime = 1.0f;
-	int totalFrame = 1;
-	int currentFrame = 1;
-	float timeSinceLastFrame = std::numeric_limits<float>::max();
-};

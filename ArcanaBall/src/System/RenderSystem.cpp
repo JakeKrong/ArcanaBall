@@ -1,7 +1,7 @@
 #include "RenderSystem.h"
 
 #include <algorithm>
-#include <SFML/Graphics/Sprite.hpp>
+#include <SFML/Graphics/RectangleShape.hpp>
 #include <SFML/Graphics/Text.hpp>
 #include "Registry.h"
 
@@ -33,17 +33,22 @@ void RenderSystem::Update(sf::RenderWindow& renderWindow){
 		//Create renderable for Render Window
 		const sf::Texture* texture = rendComp.texture;
 		if (rendComp.texture) {
-			sf::Sprite renderable(*rendComp.texture);
+			sf::RectangleShape renderable(transComp.size);
+			renderable.setTexture(texture);
 			renderable.setPosition(transComp.position);
 			renderable.setRotation(sf::degrees(transComp.rotation));
-			renderable.setScale({ transComp.size.x / texture->getSize().x,
-								  transComp.size.y / texture->getSize().y });
+
+			if (m_Registry->EntityHasComponent<AnimationData>(ent)) {
+				renderable.setTextureRect(m_Registry->GetEntityComponent<AnimationData>(ent).activeSprite);
+			}
+
 			if (rendComp.flipX) {
 				renderable.setTextureRect({
 					{ static_cast<int>(texture->getSize().x), 0 },
 					{ -static_cast<int>(texture->getSize().x), static_cast<int>(texture->getSize().y) }
 				});
 			}
+
 			renderWindow.draw(renderable);
 		}
 
