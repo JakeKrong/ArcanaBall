@@ -10,5 +10,8 @@ struct BlockDestroyed : BaseEvent {
 };
 
 struct DestroyChildEntity : BaseEvent {
+	DestroyChildEntity(Entity ent) :
+		parentEntity(ent)
+	{}
 	Entity parentEntity{ 0 };
 };

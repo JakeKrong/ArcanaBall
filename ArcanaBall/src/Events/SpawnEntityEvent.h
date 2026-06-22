@@ -1,6 +1,8 @@
 #pragma once
 #include "BaseEvent.h"
 #include "SFML/System/Vector2.hpp"
+#include "Block.h"
+
 #include <variant>
 
 struct SpawnEntityEvent : BaseEvent {
@@ -11,15 +13,15 @@ struct SpawnEntityEvent : BaseEvent {
 };
 
 struct SpawnEffectsEvent : BaseEvent {
-	enum class EffectType { WoodBreak };
+	using EffectType = std::variant<BlockType, ElemInfusion, ActiveReaction>;
 
-	SpawnEffectsEvent() = default;
-	SpawnEffectsEvent(EffectType type, sf::Vector2f payload) :
+	SpawnEffectsEvent(EffectType type, sf::Vector2f payload, Entity ent = 0) :
 		type(type),
-		payload(payload)
+		payload(payload),
+		parentEntity(ent)
 	{ }
 
 	EffectType type;
-
 	sf::Vector2f payload; //Insert data for each class type
+	Entity parentEntity{ 0 };
 };

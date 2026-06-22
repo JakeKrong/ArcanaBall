@@ -1,12 +1,13 @@
 #include "EntityManager.h"
 
 #include "assert.h"
+#include <iostream>
 
 EntityManager::EntityManager() {
 	for (int i = 1; i <= ENTITY_CAP; i++) {
 		m_AvailableEntities.push(i);
 	}
-	m_EntSignatures.resize(ENTITY_CAP);
+	m_EntSignatures.resize(ENTITY_CAP + 1);
 };
 
 EntityManager::~EntityManager() {};
@@ -16,7 +17,6 @@ Entity EntityManager::PopEntity() {
 
 	Entity id = m_AvailableEntities.front();
 	m_AvailableEntities.pop();
-
 	return id;
 }
 
@@ -25,7 +25,7 @@ void EntityManager::PushEntity(Entity ent) {
 	m_EntSignatures[ent].reset();
 }
 
-Signature EntityManager::GetEntSignature(Entity ent) {
+const Signature& EntityManager::GetEntSignature (Entity ent) const {
 	return m_EntSignatures[ent];
 }
 

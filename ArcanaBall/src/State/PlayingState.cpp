@@ -2,9 +2,12 @@
 #include "Game.h"
 #include "Prefabs.h"
 
-#include "SpawnEntityEvent.h"
 #include "GameStateEvent.h"
 #include "AudioEvent.h"
+#include "SpawnEntityEvent.h"
+#include "EntityDestroyedEvent.h"
+#include "ChangeTextureEvent.h"
+#include "StageEvent.h"
 
 //TESTING
 #include <iostream>
@@ -160,19 +163,14 @@ void PlayingState::Update(float deltaTime) {
 
 		UpdatePaddle(playerInput);
 		if (playerInput.mouseClicked && m_LevelData.ballAttached) LaunchBall();
+
 		m_CollisionSystem.Update();
 		m_PhysicsSystem.Update(deltaTime);
 		m_BlockSystem.Update();
 		m_HierarchySystem.Update();
+		ManageEntities();
 		m_AnimationSystem.Update(deltaTime);
 
-		for (auto& event : registry.GetEventQueue().GetTEvents<SpawnEffectsEvent>()) {
-			switch (event->type) {
-			case(SpawnEffectsEvent::EffectType::WoodBreak):
-				Prefab::GameObject::WoodBreak(registry, m_Game->GetTextureManager(), event->payload);
-				break;
-			}
-		}
 		for (auto& event : registry.GetEventQueue().GetTEvents<GameStateEvent>()) {
 			if (event->type == GameStateEvent::Type::GameOver && !m_LevelData.gameOverEnqueued) {
 				m_LevelData.gameOverEnqueued = true;
@@ -336,11 +334,63 @@ void PlayingState::GameWon() {
 }
 
 void PlayingState::UpdatePaddle(InputState& inputState) {
-	Transform& paddleTrans = m_Game->GetRegistry().GetComponentArray<Transform>().GetTComponent(m_StageEnts.paddleEnt);
+	Registry& reg = m_Game->GetRegistry();
+	Transform& paddleTrans = reg.GetComponentArray<Transform>().GetTComponent(m_StageEnts.paddleEnt);
 	sf::Vector2f mousePos = inputState.mousePos;
 
-	//Clamp paddle position within world border
+	//Clamp paddle position within stage border
 	paddleTrans.position.x = std::min(980.f - paddleTrans.size.x, std::max(275.f, mousePos.x));
+
+	if ((inputState.activeFire || inputState.activeIce || inputState.activeLight) && !m_LevelData.gameOverEnqueued) {
+		StatusEffect& paddleEff = reg.GetEntityComponent<StatusEffect>(m_StageEnts.paddleEnt);
+		EventQueue& eventQ = reg.GetEventQueue();
+
+		ElemInfusion infuseIntent;
+		if (inputState.activeFire) infuseIntent = ElemInfusion::Fire;
+		else if (inputState.activeIce) infuseIntent = ElemInfusion::Ice;
+		else if (inputState.activeLight) infuseIntent = ElemInfusion::Lightning;
+
+		if (paddleEff.element == infuseIntent) {
+			paddleEff.element = ElemInfusion::None;
+			eventQ.Publish<ChangeTextureEvent>({ m_StageEnts.paddleEnt, "GameObject/Paddle" });
+			//Check if ball attached
+			if (m_LevelData.ballAttached) {
+				StatusEffect& ballEff = reg.GetEntityComponent<StatusEffect>(m_StageEnts.ballEnt);
+				ballEff.element = ElemInfusion::None;
+				eventQ.Publish<DestroyChildEntity>(m_StageEnts.ballEnt);
+			}
+		}
+		else {
+			paddleEff.element = infuseIntent;
+
+			std::string paddleTexture;
+			switch (infuseIntent) {
+			case(ElemInfusion::Fire):
+				paddleTexture = "GameObject/Paddle_Fire";
+				eventQ.Publish<AudioEvent>({ AudioAsset::Elem_InfFire, false });
+				break;
+			case(ElemInfusion::Ice):
+				paddleTexture = "GameObject/Paddle_Ice";
+				eventQ.Publish<AudioEvent>({ AudioAsset::Elem_InfIce, false });
+				break;
+			case(ElemInfusion::Lightning):
+				paddleTexture = "GameObject/Paddle_Lightning";
+				eventQ.Publish<AudioEvent>({ AudioAsset::Elem_InfLightning, false });
+				break;
+			}
+			eventQ.Publish<ChangeTextureEvent>({ m_StageEnts.paddleEnt, paddleTexture });
+
+			//Check if ball attached
+			if (m_LevelData.ballAttached) {
+				StatusEffect& ballEff = reg.GetEntityComponent<StatusEffect>(m_StageEnts.ballEnt);
+				if (ballEff.element != ElemInfusion::None) {
+					eventQ.Publish<DestroyChildEntity>(m_StageEnts.ballEnt);
+				}
+				ballEff.element = infuseIntent;
+				eventQ.Publish<SpawnEffectsEvent>({ infuseIntent, reg.GetEntityComponent<Transform>(m_StageEnts.ballEnt).position,m_StageEnts.ballEnt});
+			}
+		}
+	}
 }
 
 void PlayingState::AttachBallToPaddle() {
@@ -352,6 +402,19 @@ void PlayingState::AttachBallToPaddle() {
 		sf::Vector2f{ (paddleTrans.size.x / 2) - (ballTrans.size.x / 2), -25 });
 
 	m_LevelData.ballAttached = true;
+
+	//Reset Ball and Paddle Infusion
+	ElemInfusion& paddleStatus = registry.GetEntityComponent<StatusEffect>(m_StageEnts.paddleEnt).element;
+	if (paddleStatus != ElemInfusion::None) {
+		paddleStatus = ElemInfusion::None;
+		registry.GetEventQueue().Publish<ChangeTextureEvent>({ m_StageEnts.paddleEnt, "GameObject/Paddle" });
+	}
+
+	ElemInfusion& ballStatus = registry.GetEntityComponent<StatusEffect>(m_StageEnts.ballEnt).element;
+	if (ballStatus != ElemInfusion::None) {
+		ballStatus = ElemInfusion::None;
+		registry.GetEventQueue().Publish<DestroyChildEntity>(m_StageEnts.ballEnt);
+	}
 }
 
 void PlayingState::LaunchBall() {
@@ -367,4 +430,63 @@ void PlayingState::LaunchBall() {
 
 	registry.AddComponentToEntity<Physics>(m_StageEnts.ballEnt,
 		sf::Vector2f{ ballSpeed, sf::Angle(sf::degrees(launchAngle)) });
+}
+
+void PlayingState::ManageEntities() {
+	Registry& registry = m_Game->GetRegistry();
+
+	//Process Spawn Entity Events
+	for (auto event : registry.GetEventQueue().GetTEvents<SpawnEffectsEvent>()) {
+		if (auto block = std::get_if<BlockType>(&event->type)) {
+			Prefab::GameObject::BlockBreakEff(registry, m_Game->GetTextureManager(), event->payload, *block);
+		}
+		else if (auto infusion = std::get_if<ElemInfusion>(&event->type)) {
+			if (event->parentEntity == m_StageEnts.ballEnt)
+				Prefab::GameObject::BallElementEff(registry, m_Game->GetTextureManager(), event->parentEntity, event->payload, *infusion);
+			else
+				Prefab::GameObject::BlockElementEff(registry, m_Game->GetTextureManager(), event->parentEntity, event->payload, *infusion);
+		}
+		else if (auto reaction = std::get_if<ActiveReaction>(&event->type)) {
+			switch (*reaction) {
+			case(ActiveReaction::IceShatter):
+				Prefab::Reaction::IceShatter(registry, m_Game->GetTextureManager(), event->payload);
+				registry.GetEventQueue().Publish<AudioEvent>(AudioAsset::Elem_IceShatter);
+				break;
+			case(ActiveReaction::Overload):
+				Prefab::Reaction::Overload(registry, m_Game->GetTextureManager(), event->payload);
+				registry.GetEventQueue().Publish<AudioEvent>(AudioAsset::Elem_Overload);
+				break;
+			case(ActiveReaction::LightningCross):
+				Prefab::Reaction::LightningCross(registry, m_Game->GetTextureManager(), event->payload);
+				registry.GetEventQueue().Publish<AudioEvent>(AudioAsset::Elem_LightningCross);
+				break;
+			}
+		}
+	}
+
+	//Process Change Entity Texture Events
+	for (auto event : registry.GetEventQueue().GetTEvents<ChangeTextureEvent>()) {
+		registry.GetEntityComponent<Renderable>(event->entity).texture = &m_Game->GetTextureManager().Load(event->newTextureName);
+	}
+
+	//Process Stage Events
+	for (auto event : registry.GetEventQueue().GetTEvents<StageEvent>()) {
+		switch (event->eventType) {
+		case(StageEvent::EventType::BallPaddleCollision):
+		{
+			StatusEffect& ballEff = registry.GetEntityComponent<StatusEffect>(m_StageEnts.ballEnt);
+			StatusEffect& paddleEff = registry.GetEntityComponent<StatusEffect>(m_StageEnts.paddleEnt);
+			if (ballEff.element != paddleEff.element) {
+				if (ballEff.element != ElemInfusion::None) registry.GetEventQueue().PublishDeferred<DestroyChildEntity>(m_StageEnts.ballEnt);
+
+				ballEff.element = paddleEff.element;
+				if (ballEff.element != ElemInfusion::None)
+					registry.GetEventQueue().PublishDeferred<SpawnEffectsEvent>({ ballEff.element, registry.GetEntityComponent<Transform>(m_StageEnts.ballEnt).position, m_StageEnts.ballEnt });
+			}
+			break;
+		}
+		case(StageEvent::EventType::ReactionTriggered):
+			break;
+		}
+	}
 }

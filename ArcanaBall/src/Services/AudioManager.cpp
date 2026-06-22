@@ -5,7 +5,6 @@
 #include <print>
 
 AudioManager::AudioManager(){
-	m_ActiveChannels.reserve(MAX_AUDIO_CHANNELS);
 	m_AudioVolume = DefaultVolumeSetting;
 }
 
@@ -20,8 +19,26 @@ void AudioManager::PreloadAudio() {
 		}
 	};
 
+	//UI
 	loadAudio(AudioAsset::UI_ButtonClick, "Button_Click");
+
+	//FX
 	loadAudio(AudioAsset::FX_Slowmo, "Slow_Mo");
+	loadAudio(AudioAsset::FX_StoneBreak, "Stone_Break");
+	loadAudio(AudioAsset::FX_BrickHit, "Brick_Hit");
+	loadAudio(AudioAsset::FX_BrickBreak, "Brick_Break");
+	loadAudio(AudioAsset::FX_WoodHit, "Wood_Hit");
+	loadAudio(AudioAsset::FX_WoodBreak, "Wood_Break");
+	loadAudio(AudioAsset::FX_SteelHit, "Steel_Hit");
+	loadAudio(AudioAsset::FX_SteelBreak, "Steel_Break");
+
+	//Elements
+	loadAudio(AudioAsset::Elem_InfFire, "Fire_Infuse");
+	loadAudio(AudioAsset::Elem_InfIce, "Ice_Infuse");
+	loadAudio(AudioAsset::Elem_InfLightning, "Lightning_Infuse");
+	loadAudio(AudioAsset::Elem_IceShatter, "IceShatter");
+	loadAudio(AudioAsset::Elem_Overload, "Overload");
+	loadAudio(AudioAsset::Elem_LightningCross, "LightningCross");
 }
 
 AudioID AudioManager::PlayAudio(AudioAsset asset, bool loop) {

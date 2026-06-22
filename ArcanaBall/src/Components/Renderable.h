@@ -19,6 +19,7 @@ struct Renderable {
 	RenderLayer layer{ 0 };
 	bool visible{ true };
 	bool flipX{ false };
+	bool flipY{ false };
 };
 
 struct RendText {

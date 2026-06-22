@@ -20,7 +20,7 @@ public:
 
 	Entity PopEntity();
 	void PushEntity(Entity);
-	Signature GetEntSignature(Entity);
+	const Signature& GetEntSignature(Entity) const;
 	void SetSignature(Entity, Signature);
 
 private:

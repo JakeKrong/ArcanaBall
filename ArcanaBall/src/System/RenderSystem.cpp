@@ -38,17 +38,25 @@ void RenderSystem::Update(sf::RenderWindow& renderWindow){
 			renderable.setPosition(transComp.position);
 			renderable.setRotation(sf::degrees(transComp.rotation));
 
+			sf::IntRect texRect;
 			if (m_Registry->EntityHasComponent<AnimationData>(ent)) {
-				renderable.setTextureRect(m_Registry->GetEntityComponent<AnimationData>(ent).activeSprite);
+				texRect = m_Registry->GetEntityComponent<AnimationData>(ent).activeSprite;
+			}
+			else {
+				texRect = sf::IntRect({ 0, 0 }, 
+					{ static_cast<int>(texture->getSize().x), static_cast<int>(texture->getSize().y) });
 			}
 
 			if (rendComp.flipX) {
-				renderable.setTextureRect({
-					{ static_cast<int>(texture->getSize().x), 0 },
-					{ -static_cast<int>(texture->getSize().x), static_cast<int>(texture->getSize().y) }
-				});
+				texRect.position.x = texRect.position.x + texRect.size.x;
+				texRect.size.x = -texRect.size.x;
+			}
+			if (rendComp.flipY) {
+				texRect.position.y = texRect.position.y + texRect.size.y;
+				texRect.size.y = -texRect.size.y;
 			}
 
+			renderable.setTextureRect(texRect);
 			renderWindow.draw(renderable);
 		}
 

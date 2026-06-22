@@ -23,6 +23,7 @@ public:
 	void UpdatePaddle(InputState&);
 	void AttachBallToPaddle();
 	void LaunchBall();
+	void ManageEntities();
 
 private:
 	// Systems //

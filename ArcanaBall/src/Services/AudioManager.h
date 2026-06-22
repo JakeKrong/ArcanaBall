@@ -38,7 +38,7 @@ private:
     static constexpr size_t MAX_AUDIO_CHANNELS = 64;
 
     std::unordered_map<AudioAsset, sf::SoundBuffer> m_Buffers;
-    std::vector<ActiveChannel> m_ActiveChannels;
+    std::list<ActiveChannel> m_ActiveChannels;
 
     AudioID m_NextId = 1;
     sf::Music m_Music;

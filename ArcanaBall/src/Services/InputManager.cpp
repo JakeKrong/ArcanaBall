@@ -8,30 +8,40 @@ void InputManager::Update(sf::RenderWindow& window) {
 }
 
 void InputManager::HandleEvent(const sf::Event& event) {
-	if (event.is<sf::Event::MouseButtonPressed>()) {
-		if (event.getIf<sf::Event::MouseButtonPressed>()->button == sf::Mouse::Button::Left) {
-			m_InputState.mouseClicked = true;
-		}
+	if (auto mouseEvent = event.getIf<sf::Event::MouseButtonPressed>()) {
+		if (mouseEvent->button == sf::Mouse::Button::Left) m_InputState.mouseClicked = true;
 	}
-	else if (event.is<sf::Event::MouseButtonReleased>()) {
-		if (event.getIf<sf::Event::MouseButtonReleased>()->button == sf::Mouse::Button::Left) {
+	else if (auto mouseEvent = event.getIf<sf::Event::MouseButtonReleased>()) {
+		if (mouseEvent->button == sf::Mouse::Button::Left) {
 			m_InputState.mouseReleased = true;
 		}
 	}
-	else if (event.is<sf::Event::KeyPressed>()) {
-		if (event.getIf<sf::Event::KeyPressed>()->code == sf::Keyboard::Key::Space)
-		m_InputState.activeTimeSlow = true;
+	else if (auto keyPressed = event.getIf<sf::Event::KeyPressed>()) {
+		switch (keyPressed->code) {
+		case(sf::Keyboard::Key::Q):
+			m_InputState.activeFire = true;
+			break;
+		case(sf::Keyboard::Key::W):
+			m_InputState.activeIce = true;
+			break;
+		case(sf::Keyboard::Key::E):
+			m_InputState.activeLight = true;
+			break;
+		case(sf::Keyboard::Key::Space):
+			m_InputState.activeTimeSlow = true;
+			break;
+		}
 	}
-	else if (event.getIf<sf::Event::FocusLost>()) {
+	else if (event.is<sf::Event::FocusLost>()) {
 		m_InputState.pauseGame = true;
 	}
-	else if (event.getIf<sf::Event::MouseLeft>()) {
+	else if (event.is<sf::Event::MouseLeft>()) {
 		m_InputState.mouseWithinBounds = false;
 	}
-	else if (event.getIf<sf::Event::MouseEntered>()) {
+	else if (event.is<sf::Event::MouseEntered>()) {
 		m_InputState.mouseWithinBounds = true;
 	}
-	else if (event.getIf<sf::Event::Resized>()) {
+	else if (event.is<sf::Event::Resized>()) {
 		m_InputState.pauseGame = true;
 	}
 }
@@ -45,5 +55,8 @@ void InputManager::ResetInputs() {
 	m_InputState.mouseReleased = false;
 	m_InputState.pauseGame = false;
 
+	m_InputState.activeFire = false;
+	m_InputState.activeIce = false;
+	m_InputState.activeLight = false;
 	m_InputState.activeTimeSlow = false;
 }

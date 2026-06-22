@@ -8,7 +8,6 @@
 #include "Types.h"
 #include "Component.h"
 
-
 //Interface for ComponentArray
 class IComponentArray {
 public:
@@ -59,6 +58,7 @@ public:
 	}
 
 	T& GetTComponent(Entity ent) {
+		assert(m_EntityToComponentMap.contains(ent) && "Trying to get a component unassigned to entity {}", ent);
 		return m_ComponentArray[m_EntityToComponentMap[ent]];
 	}
 

@@ -4,11 +4,7 @@
 #include "StatusEffect.h"
 
 struct BlockCollisionEvent : BaseEvent {
-	enum class CollisionSource {
-		Ball,
-		Reactions
-	};
-
 	Entity blockEntity;
-	StatusEffect colliderInfusedElement = ElemInfusion::None;
+	ElemInfusion infusedElem = ElemInfusion::None;
+	ActiveReaction reaction = ActiveReaction::None;
 };

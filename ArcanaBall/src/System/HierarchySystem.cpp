@@ -15,8 +15,15 @@ void HierarchySystem::Update() {
 
 	for (Entity ent : m_Entities) {
 		auto& childTrans = transCompArr.GetTComponent(ent);
-		auto& parentTrans = transCompArr.GetTComponent(childCompArr.GetTComponent(ent).parentEntity);
-
+		Entity parentEnt = childCompArr.GetTComponent(ent).parentEntity;
+		Transform& parentTrans = transCompArr.GetTComponent(parentEnt);
 		childTrans.position = parentTrans.position + childCompArr.GetTComponent(ent).localOffset;
+		//if (m_Registry->EntityHasComponent<Transform>(parentEnt)) {
+		//	Transform& parentTrans = transCompArr.GetTComponent(parentEnt);
+		//	childTrans.position = parentTrans.position + childCompArr.GetTComponent(ent).localOffset;
+		//}
+		//else {
+		//	m_Registry->GetEventQueue().Publish<DestroyChildEntity>(ent);
+		//}
 	}
 }

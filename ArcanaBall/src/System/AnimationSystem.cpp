@@ -5,7 +5,8 @@ void AnimationSystem::Update(float deltaTime) {
 	auto& rendCompArr = m_Registry->GetComponentArray<Renderable>();
 	auto& animCompArr = m_Registry->GetComponentArray<AnimationData>();
 
-	for (Entity ent : m_Entities) {
+	auto entities = m_Entities; //Copy vector for stable iteration
+	for (Entity ent : entities) {
 		auto& rendComp = rendCompArr.GetTComponent(ent);
 		auto& animComp = animCompArr.GetTComponent(ent);
 

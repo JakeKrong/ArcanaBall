@@ -19,9 +19,17 @@ namespace Prefab{
 		Entity Wood(Registry&, TextureManager&, sf::Vector2f);
 		Entity Steel(Registry&, TextureManager&, sf::Vector2f);
 
-		Entity WoodBreak(Registry&, TextureManager&, sf::Vector2f);
+		Entity BlockBreakEff(Registry&, TextureManager&, sf::Vector2f, BlockType);
+		Entity BallElementEff(Registry&, TextureManager&, Entity, sf::Vector2f, ElemInfusion);
+		void BlockElementEff(Registry&, TextureManager&, Entity, sf::Vector2f, ElemInfusion);
 
 		void LevelBorders(Registry&, TextureManager&);
 		Entity KillZone(Registry&);
+	}
+
+	namespace Reaction{
+		void IceShatter(Registry&, TextureManager&, sf::Vector2f);
+		void Overload(Registry&, TextureManager&, sf::Vector2f);
+		void LightningCross(Registry&, TextureManager&, sf::Vector2f);
 	}
 };

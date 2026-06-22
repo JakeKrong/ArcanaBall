@@ -4,7 +4,9 @@
 
 struct InputState {
 	//Keyboard
-	bool activeFire = false; //Example
+	bool activeFire = false;
+	bool activeIce = false;
+	bool activeLight = false;
 	bool activeTimeSlow = false;
 
 	//Mouse

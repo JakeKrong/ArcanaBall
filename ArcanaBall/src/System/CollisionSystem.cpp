@@ -4,12 +4,13 @@
 #include <cassert>
 
 #include "Registry.h"
-
 #include "EventQueue.h"
+
 #include "PhysicsEvent.h"
 #include "BlockCollisionEvent.h"
 #include "EntityDestroyedEvent.h"
 #include "GameStateEvent.h"
+#include "StageEvent.h"
 
 //TESTING
 #include <iostream>
@@ -89,7 +90,7 @@ void CollisionSystem::RegisterCollisionHandlers() {
 
 			BlockCollisionEvent blockColEvent;
 			blockColEvent.blockEntity = block;
-			blockColEvent.colliderInfusedElement = registry->GetEntityComponent<StatusEffect>(ball);
+			blockColEvent.infusedElem = registry->GetEntityComponent<StatusEffect>(ball).element;
 			registry->GetEventQueue().Publish<BlockCollisionEvent>(blockColEvent);
 		}
 	);
@@ -113,6 +114,7 @@ void CollisionSystem::RegisterCollisionHandlers() {
 				ballTrans.position.y = colDet.pointOfContact.y - ballTrans.size.y;
 
 				registry->GetEventQueue().Publish<PhysicsEvent>(event);
+				registry->GetEventQueue().Publish<StageEvent>(StageEvent::EventType::BallPaddleCollision);
 			}
 		}
 	);
@@ -150,7 +152,12 @@ void CollisionSystem::RegisterCollisionHandlers() {
 	);
 	m_CollisionHandlerMap.emplace(std::pair{ ColliderType::Effects, ColliderType::Block }, [registry = &regRef](Entity effect, Entity block, CollisionDetails colDet)
 		{
-			// Handle Effect-on-Block collision
+			BlockCollisionEvent blockColEvent;
+			blockColEvent.blockEntity = block;
+			StatusEffect& effectStatus = registry->GetEntityComponent<StatusEffect>(effect);
+			blockColEvent.infusedElem = effectStatus.element;
+			blockColEvent.reaction = effectStatus.reaction;
+			registry->GetEventQueue().Publish<BlockCollisionEvent>(blockColEvent);
 		}
 	);
 }
@@ -332,7 +339,33 @@ void CollisionSystem::Update() {
 			break;
 		}
 		case(ColliderType::Effects):
-			//Check against GridMap for collision -> then handle EFFECTS on block collision
+			const auto& effectTrans = transCompArr.GetTComponent(ent);
+			sf::Vector2i minGrid = StageToGrid(effectTrans.position);
+			sf::Vector2i maxGrid = StageToGrid(effectTrans.position + effectTrans.size);
+
+			int startX = std::max(0, minGrid.x);
+			int endX = std::min(BLOCK_COLUMNS - 1, maxGrid.x);
+			int startY = std::max(0, minGrid.y);
+			int endY = std::min(BLOCK_ROWS - 1, maxGrid.y);
+
+			for (int y = startY; y <= endY; ++y) {
+				for (int x = startX; x <= endX; ++x) {
+					Entity blockEnt = m_BlockGrid[x][y];
+					if (blockEnt == 0) continue; // Empty grid, skip
+
+					const ColliderBody effectColBody{ colCompArr.GetTComponent(ent), transCompArr.GetTComponent(ent) };
+					const ColliderBody blockColBody{ colCompArr.GetTComponent(blockEnt), transCompArr.GetTComponent(blockEnt) };
+					CollisionDetails colDet;
+
+					if (HasCollision(effectColBody, blockColBody, &colDet)) {
+						auto handlerKey = std::pair{ ColliderType::Effects, ColliderType::Block };
+
+						if (m_CollisionHandlerMap.contains(handlerKey)) {
+							m_CollisionHandlerMap.at(handlerKey)(ent, blockEnt, colDet);
+						}
+					}
+				}
+			}
 			break;
 		}
 	}

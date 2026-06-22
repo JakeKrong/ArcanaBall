@@ -21,7 +21,7 @@ SET (GAME_SOURCES
  "src/Services/TextureManager.h" "src/Services/TextureManager.cpp"
  "src/Services/AudioManager.h" "src/Services/AudioManager.cpp"
  "src/Services/FileReader.cpp" "src/Services/FileReader.h"
- "src/System/BlockSystem.h" "src/System/BlockSystem.cpp" 
+ "src/Services/FontManager.h" "src/Services/FontManager.cpp"
 
  "src/System/Systems.h" 
  "src/System/RenderSystem.h" "src/System/RenderSystem.cpp" 
@@ -29,6 +29,7 @@ SET (GAME_SOURCES
  "src/System/PhysicsSystem.h" "src/System/PhysicsSystem.cpp"
  "src/System/HierarchySystem.h" "src/System/HierarchySystem.cpp"
  "src/System/AnimationSystem.h" "src/System/AnimationSystem.cpp"
+ "src/System/BlockSystem.h" "src/System/BlockSystem.cpp" 
 
  "src/State/IState.h"
  "src/State/MainMenuState.h" "src/State/MainMenuState.cpp"
@@ -38,7 +39,7 @@ SET (GAME_SOURCES
  "src/Events/GameStateEvent.h" "src/Events/SpawnEntityEvent.h"
  "src/Events/AudioEvent.h" "src/Events/PhysicsEvent.h"
  "src/Events/BlockCollisionEvent.h" "src/Events/EntityDestroyedEvent.h"
- "src/Events/MenuNavEvent.h" "src/Services/FontManager.h" "src/Services/FontManager.cpp")
+ "src/Events/MenuNavEvent.h" "src/Events/ChangeTextureEvent.h" "src/Events/StageEvent.h")
 
 # Add source to this project's executable.
 add_executable (ArcanaBall "src/ArcanaBall.cpp" ${GAME_SOURCES})
