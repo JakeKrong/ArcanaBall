@@ -4,7 +4,7 @@
 #include <memory>
 #include <array>
 
-#define BuildForPlayable 1
+#define BuildForPlayable 0
 
 // *** Game Configurations *** //
 #define TargetFixedUpdateFreq 144
