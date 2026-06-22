@@ -6,9 +6,6 @@
 
 #include <cassert>
 
-//Testing
-#include <iostream>
-
 Game::Game() :
 	m_Window(sf::RenderWindow(sf::VideoMode(DefaultResolution), "Arcana Ball"))
 {
@@ -69,8 +66,6 @@ void Game::Run() {
 		m_InputManager.ResetInputs();
 		m_Registry.GetEventQueue().ClearEvents();
 
-		//####### DEBBUGGING #######//
-		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Space)) std::cout<<"\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n";
 	}
 }
 
@@ -85,4 +80,7 @@ StageGridData& Game::GetStageGridData(int level) {
 	return m_LevelDataCache.at(level); 
 }
 
-void Game::SetMouseVisibility(bool visibility) { m_Window.setMouseCursorVisible(visibility); }
+void Game::SetMouseVisibility(bool visibility) { 
+	m_Window.setMouseCursorVisible(visibility); 
+	m_Window.setMouseCursorGrabbed(!visibility);
+}

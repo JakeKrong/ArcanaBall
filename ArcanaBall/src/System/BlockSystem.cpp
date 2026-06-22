@@ -8,6 +8,7 @@
 #include "SpawnEntityEvent.h"
 #include "GameStateEvent.h"
 #include "AudioEvent.h"
+#include "ChangeTextureEvent.h"
 
 void BlockSystem::Update() {
 	auto& blockCompArr = m_Registry->GetComponentArray<Block>();
@@ -20,12 +21,15 @@ void BlockSystem::Update() {
 		auto& statusEffComp = statusEffCompArr.GetTComponent(blockEntity);
 		auto& transComp = m_Registry->GetEntityComponent<Transform>(blockEntity);
 
+		float currDurability = blockComp.durability;
+
 		if (event->reaction == ActiveReaction::None) { //If non reaction collision (ball collision)
 			QueueBlockAudio(blockComp.blockType, false);
 		}
 
 		if (event->infusedElem == ElemInfusion::None) { //Regular uninfused ball collision
 			blockComp.durability -= 1;
+			UpdateBlockSprite(blockComp.blockType, blockEntity, currDurability, blockComp.durability, blockComp.maxDurability);
 		}
 		else { // If collider of entity with block has an active elemental infusion
 
@@ -44,6 +48,8 @@ void BlockSystem::Update() {
 					statusEffComp.element = ElemInfusion::None;
 					m_Registry->GetEventQueue().Publish<DestroyChildEntity>(event->blockEntity);
 				}
+				UpdateBlockSprite(blockComp.blockType, blockEntity, currDurability, blockComp.durability, blockComp.maxDurability);
+
 				break;
 			case(Block::ResistanceLvl::Vulnerable):
 				blockComp.durability -= 1;
@@ -60,6 +66,7 @@ void BlockSystem::Update() {
 					statusEffComp.element = ElemInfusion::None;
 					m_Registry->GetEventQueue().Publish<DestroyChildEntity>(event->blockEntity);
 				}
+				UpdateBlockSprite(blockComp.blockType, blockEntity, currDurability, blockComp.durability, blockComp.maxDurability);
 				break;
 			}
 		}
@@ -91,19 +98,16 @@ void BlockSystem::TriggerReaction(ElemInfusion elem1, ElemInfusion elem2, sf::Ve
 	//Trigger Ice Shatter
 	if ((elem1 == ElemInfusion::Fire && elem2 == ElemInfusion::Ice) ||
 		(elem1 == ElemInfusion::Ice && elem2 == ElemInfusion::Fire)) {
-		//std::cout << "ICE SHATTERRRRR RAHHHHH\n";
 		m_Registry->GetEventQueue().Publish<SpawnEffectsEvent>({ ActiveReaction::IceShatter, blockPos });
 	}
 	//Trigger Overload
 	else if ((elem1 == ElemInfusion::Fire && elem2 == ElemInfusion::Lightning) ||
 			 (elem1 == ElemInfusion::Lightning && elem2 == ElemInfusion::Fire)){
-		//std::cout << "OVERLOAD KABOOM\n";
 		m_Registry->GetEventQueue().Publish<SpawnEffectsEvent>({ ActiveReaction::Overload, blockPos });
 	}
 	//Trigger Lightning Cross
 	else if ((elem1 == ElemInfusion::Ice && elem2 == ElemInfusion::Lightning) ||
 		(elem1 == ElemInfusion::Lightning && elem2 == ElemInfusion::Ice)) {
-		//std::cout << "LIGHTNING CROSS BZZZZZZ\n";
 		m_Registry->GetEventQueue().Publish<SpawnEffectsEvent>({ ActiveReaction::LightningCross, blockPos });
 	}
 }
@@ -127,4 +131,24 @@ void BlockSystem::QueueBlockAudio(BlockType type, bool isDestroyed) {
 		break;
 	}
 	m_Registry->GetEventQueue().Publish<AudioEvent>(hitAudio);
+}
+
+void BlockSystem::UpdateBlockSprite(BlockType type, Entity ent, float prevDurability, float newDurability, float maxDurability) {
+	switch (type) {
+	case(BlockType::Brick):
+		if (prevDurability > maxDurability / 2 && newDurability <= maxDurability / 2)
+			m_Registry->GetEventQueue().Publish<ChangeTextureEvent>({ ent, "GameObject/Brick_Damaged" });
+		break;
+	case(BlockType::Wood):
+		if (prevDurability > maxDurability / 2 && newDurability <= maxDurability / 2)
+			m_Registry->GetEventQueue().Publish<ChangeTextureEvent>({ ent, "GameObject/Wood_Damaged" });
+		break;
+	case(BlockType::Steel): // 2 damaged block variants
+		if (prevDurability > maxDurability / 3 * 2 && newDurability <= maxDurability / 3 * 2)
+			m_Registry->GetEventQueue().Publish<ChangeTextureEvent>({ ent, "GameObject/Steel_Damaged_1" });
+		else if (prevDurability > maxDurability / 3 && newDurability <= maxDurability / 3) {
+			m_Registry->GetEventQueue().Publish<ChangeTextureEvent>({ ent, "GameObject/Steel_Damaged_2" });
+		}
+		break;
+	}
 }

@@ -74,7 +74,7 @@ void MainMenuState::Enter()
 
 	Prefab::UI::VolumeControl(registry, m_Game->GetTextureManager(), m_Game->GetAudioManager().getCurVolume());
 
-	//m_Game->GetAudioManager().PlayMusic("Rivellon_8bit");
+	m_Game->GetAudioManager().PlayMusic("Rivellon_8bit");
 }
 
 void MainMenuState::Exit()
@@ -122,36 +122,36 @@ void MainMenuState::SelectLevel() {
 
 	Entity darkOverlay = registry.CreateEntity();
 	registry.AddComponentToEntity<Transform>(darkOverlay, Transform{ {0,0}, DefaultResolution });
-	registry.AddComponentToEntity<Renderable>(darkOverlay, &m_Game->GetTextureManager().Load("Overlay"), RenderLayer::UI);
+	registry.AddComponentToEntity<Renderable>(darkOverlay, &m_Game->GetTextureManager().Load("Overlay"), RenderLayer::UI2);
 	m_OverlayEnt.push_back(darkOverlay);
 
 	Entity level1Button = registry.CreateEntity();
 	registry.AddComponentToEntity<Transform>(level1Button, sf::Vector2f{ 490,100 }, sf::Vector2f{ 300,75 });
-	registry.AddComponentToEntity<Renderable>(level1Button, &m_Game->GetTextureManager().Load("UI/Level_1"), RenderLayer::UI);
+	registry.AddComponentToEntity<Renderable>(level1Button, &m_Game->GetTextureManager().Load("UI/Level_1"), RenderLayer::UI2);
 	registry.AddComponentToEntity<Button>(level1Button, ButtonAction::StartGame, 1);
 	m_OverlayEnt.push_back(level1Button);
 
 	Entity level2Button = registry.CreateEntity();
 	registry.AddComponentToEntity<Transform>(level2Button, sf::Vector2f{ 490,225 }, sf::Vector2f{ 300,75 });
-	registry.AddComponentToEntity<Renderable>(level2Button, &m_Game->GetTextureManager().Load("UI/Level_2"), RenderLayer::UI);
+	registry.AddComponentToEntity<Renderable>(level2Button, &m_Game->GetTextureManager().Load("UI/Level_2"), RenderLayer::UI2);
 	registry.AddComponentToEntity<Button>(level2Button, ButtonAction::StartGame, 2);
 	m_OverlayEnt.push_back(level2Button);
 
 	Entity level3Button = registry.CreateEntity();
 	registry.AddComponentToEntity<Transform>(level3Button, sf::Vector2f{ 490,350 }, sf::Vector2f{ 300,75 });
-	registry.AddComponentToEntity<Renderable>(level3Button, &m_Game->GetTextureManager().Load("UI/Level_3"), RenderLayer::UI);
+	registry.AddComponentToEntity<Renderable>(level3Button, &m_Game->GetTextureManager().Load("UI/Level_3"), RenderLayer::UI2);
 	registry.AddComponentToEntity<Button>(level3Button, ButtonAction::StartGame, 3);
 	m_OverlayEnt.push_back(level3Button);
 
 	Entity level4Button = registry.CreateEntity();
 	registry.AddComponentToEntity<Transform>(level4Button, sf::Vector2f{ 490,475 }, sf::Vector2f{ 300,75 });
-	registry.AddComponentToEntity<Renderable>(level4Button, &m_Game->GetTextureManager().Load("UI/Level_4"), RenderLayer::UI);
+	registry.AddComponentToEntity<Renderable>(level4Button, &m_Game->GetTextureManager().Load("UI/Level_4"), RenderLayer::UI2);
 	registry.AddComponentToEntity<Button>(level4Button, ButtonAction::StartGame, 4);
 	m_OverlayEnt.push_back(level4Button);
 
 	Entity backButton = registry.CreateEntity();
 	registry.AddComponentToEntity<Transform>(backButton, sf::Vector2f{ 590,600 }, sf::Vector2f{ 100,75 });
-	registry.AddComponentToEntity<Renderable>(backButton, &m_Game->GetTextureManager().Load("UI/Back"), RenderLayer::UI);
+	registry.AddComponentToEntity<Renderable>(backButton, &m_Game->GetTextureManager().Load("UI/Back"), RenderLayer::UI2);
 	registry.AddComponentToEntity<Button>(backButton, ButtonAction::CloseMenuOverlay);
 	m_OverlayEnt.push_back(backButton);
 }
@@ -163,12 +163,17 @@ void MainMenuState::GameGuide() {
 
 	Entity darkOverlay = registry.CreateEntity();
 	registry.AddComponentToEntity<Transform>(darkOverlay, Transform{ {0,0}, DefaultResolution });
-	registry.AddComponentToEntity<Renderable>(darkOverlay, &m_Game->GetTextureManager().Load("Overlay"), RenderLayer::UI);
+	registry.AddComponentToEntity<Renderable>(darkOverlay, &m_Game->GetTextureManager().Load("Overlay"), RenderLayer::UI2);
 	m_OverlayEnt.push_back(darkOverlay);
 
+	Entity guideImg = registry.CreateEntity();
+	registry.AddComponentToEntity<Transform>(guideImg, sf::Vector2f{ 0,0 }, sf::Vector2f{ 1280,720 });
+	registry.AddComponentToEntity<Renderable>(guideImg, &m_Game->GetTextureManager().Load("Guide"), RenderLayer::UI2);
+	m_OverlayEnt.push_back(guideImg);
+
 	Entity backButton = registry.CreateEntity();
-	registry.AddComponentToEntity<Transform>(backButton, sf::Vector2f{ 590,600 }, sf::Vector2f{ 100,75 });
-	registry.AddComponentToEntity<Renderable>(backButton, &m_Game->GetTextureManager().Load("UI/Back"), RenderLayer::UI);
+	registry.AddComponentToEntity<Transform>(backButton, sf::Vector2f{ 1150 ,25 }, sf::Vector2f{ 100,75 });
+	registry.AddComponentToEntity<Renderable>(backButton, &m_Game->GetTextureManager().Load("UI/Back"), RenderLayer::UI2);
 	registry.AddComponentToEntity<Button>(backButton, ButtonAction::CloseMenuOverlay);
 	m_OverlayEnt.push_back(backButton);
 

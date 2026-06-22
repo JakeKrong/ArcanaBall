@@ -9,9 +9,6 @@
 #include "ChangeTextureEvent.h"
 #include "StageEvent.h"
 
-//TESTING
-#include <iostream>
-
 PlayingState::PlayingState(Game* game, int levelNumber, StageGridData& stageData) :
 	IState(game),
 	m_RenderSystem(game->GetRegistry().RegisterSystem<RenderSystem>()),
@@ -97,7 +94,7 @@ void PlayingState::Enter() {
 	Entity liveRemText = registry.CreateEntity();
 	registry.AddComponentToEntity<Transform>(liveRemText, sf::Vector2f{ 25,25 });
 	registry.AddComponentToEntity<Renderable>(liveRemText, nullptr, RenderLayer::UI);
-	registry.AddComponentToEntity<RendText>(liveRemText, RendText{ "Lives Remaining:", &m_Game->GetFontManager().GetFont("pala") });
+	registry.AddComponentToEntity<RendText>(liveRemText, "Lives Remaining:", &m_Game->GetFontManager().GetFont("pala") );
 
 	m_StageEnts.lifeInd1Ent = Prefab::UI::LifeIndicator(registry, m_Game->GetTextureManager(), 1);
 	m_StageEnts.lifeInd2Ent = Prefab::UI::LifeIndicator(registry, m_Game->GetTextureManager(), 2);
@@ -106,8 +103,10 @@ void PlayingState::Enter() {
 	registry.AddComponentToEntity<Transform>(background, sf::Vector2f{ 0,0 }, sf::Vector2f(DefaultResolution));
 	registry.AddComponentToEntity<Renderable>(background, &m_Game->GetTextureManager().Load("Forest_Background"), RenderLayer::Background);
 	Entity overlay = registry.CreateEntity();
-	registry.AddComponentToEntity<Transform>(overlay, sf::Vector2f{ 270,0 }, sf::Vector2f({ 720,720 }));
-	registry.AddComponentToEntity<Renderable>(overlay, &m_Game->GetTextureManager().Load("Overlay"), RenderLayer::Background);
+	registry.AddComponentToEntity<Transform>(overlay, sf::Vector2f{ 270,0 }, sf::Vector2f({ 745,720 }));
+	registry.AddComponentToEntity<Renderable>(overlay, &m_Game->GetTextureManager().Load("Overlay"), RenderLayer::Background2);
+
+	Prefab::UI::Controls(registry, m_Game->GetTextureManager(), m_Game->GetFontManager());
 
 	//Set Ball and Paddle
 	m_StageEnts.ballEnt = Prefab::GameObject::Ball(registry, m_Game->GetTextureManager());
@@ -235,29 +234,29 @@ void PlayingState::PauseGame() {
 
 	Entity darkOverlay = registry.CreateEntity();
 	registry.AddComponentToEntity<Transform>(darkOverlay, Transform{ {0,0}, DefaultResolution });
-	registry.AddComponentToEntity<Renderable>(darkOverlay, &m_Game->GetTextureManager().Load("Overlay"), RenderLayer::UI);
+	registry.AddComponentToEntity<Renderable>(darkOverlay, &m_Game->GetTextureManager().Load("Overlay"), RenderLayer::UI2);
 	m_OverlayEnt.push_back(darkOverlay);
 
 	Entity pauseTitle = registry.CreateEntity();
 	registry.AddComponentToEntity<Transform>(pauseTitle, sf::Vector2f{ 340,150 }, sf::Vector2f{ 600,50 });
-	registry.AddComponentToEntity<Renderable>(pauseTitle, &m_Game->GetTextureManager().Load("Game_Paused"), RenderLayer::UI);
+	registry.AddComponentToEntity<Renderable>(pauseTitle, &m_Game->GetTextureManager().Load("Game_Paused"), RenderLayer::Overlay);
 	m_OverlayEnt.push_back(pauseTitle);
 
 	Entity continueBtn = registry.CreateEntity();
 	registry.AddComponentToEntity<Transform>(continueBtn, sf::Vector2f{ 440,300 }, sf::Vector2f{ 400,50 });
-	registry.AddComponentToEntity<Renderable>(continueBtn, &m_Game->GetTextureManager().Load("UI/Continue"), RenderLayer::UI);
+	registry.AddComponentToEntity<Renderable>(continueBtn, &m_Game->GetTextureManager().Load("UI/Continue"), RenderLayer::Overlay);
 	registry.AddComponentToEntity<Button>(continueBtn, ButtonAction::ResumeGame);
 	m_OverlayEnt.push_back(continueBtn);
 
 	Entity restartBtn = registry.CreateEntity();
 	registry.AddComponentToEntity<Transform>(restartBtn, sf::Vector2f{ 390,400 }, sf::Vector2f{ 500,50 });
-	registry.AddComponentToEntity<Renderable>(restartBtn, &m_Game->GetTextureManager().Load("UI/Restart"), RenderLayer::UI);
+	registry.AddComponentToEntity<Renderable>(restartBtn, &m_Game->GetTextureManager().Load("UI/Restart"), RenderLayer::Overlay);
 	registry.AddComponentToEntity<Button>(restartBtn, ButtonAction::RestartGame, m_LevelData.levelNumber);
 	m_OverlayEnt.push_back(restartBtn);
 
 	Entity backToMenuBtn = registry.CreateEntity();
 	registry.AddComponentToEntity<Transform>(backToMenuBtn, sf::Vector2f{ 390,500 }, sf::Vector2f{ 500,50 });
-	registry.AddComponentToEntity<Renderable>(backToMenuBtn, &m_Game->GetTextureManager().Load("UI/Back_To_Main"), RenderLayer::UI);
+	registry.AddComponentToEntity<Renderable>(backToMenuBtn, &m_Game->GetTextureManager().Load("UI/Back_To_Main"), RenderLayer::Overlay);
 	registry.AddComponentToEntity<Button>(backToMenuBtn, ButtonAction::MainMenu);
 	m_OverlayEnt.push_back(backToMenuBtn);
 
@@ -283,20 +282,20 @@ void PlayingState::GameLost() {
 
 	Entity darkOverlay = registry.CreateEntity();
 	registry.AddComponentToEntity<Transform>(darkOverlay, Transform{ {0,0}, DefaultResolution });
-	registry.AddComponentToEntity<Renderable>(darkOverlay, &m_Game->GetTextureManager().Load("Overlay"), RenderLayer::UI);
+	registry.AddComponentToEntity<Renderable>(darkOverlay, &m_Game->GetTextureManager().Load("Overlay"), RenderLayer::UI2);
 
 	Entity gameOverTitle = registry.CreateEntity();
 	registry.AddComponentToEntity<Transform>(gameOverTitle, sf::Vector2f{ 340,150 }, sf::Vector2f{ 600,50 });
-	registry.AddComponentToEntity<Renderable>(gameOverTitle, &m_Game->GetTextureManager().Load("Game_Over"), RenderLayer::UI);
+	registry.AddComponentToEntity<Renderable>(gameOverTitle, &m_Game->GetTextureManager().Load("Game_Over"), RenderLayer::Overlay);
 
 	Entity restartLvlBtn = registry.CreateEntity();
 	registry.AddComponentToEntity<Transform>(restartLvlBtn, sf::Vector2f{ 390,300 }, sf::Vector2f{ 500,50 });
-	registry.AddComponentToEntity<Renderable>(restartLvlBtn, &m_Game->GetTextureManager().Load("UI/Restart"), RenderLayer::UI);
+	registry.AddComponentToEntity<Renderable>(restartLvlBtn, &m_Game->GetTextureManager().Load("UI/Restart"), RenderLayer::Overlay);
 	registry.AddComponentToEntity<Button>(restartLvlBtn, ButtonAction::StartGame, m_LevelData.levelNumber);
 
 	Entity backToMenuBtn = registry.CreateEntity();
 	registry.AddComponentToEntity<Transform>(backToMenuBtn, sf::Vector2f{ 390,400 }, sf::Vector2f{ 500,50 });
-	registry.AddComponentToEntity<Renderable>(backToMenuBtn, &m_Game->GetTextureManager().Load("UI/Back_To_Main"), RenderLayer::UI);
+	registry.AddComponentToEntity<Renderable>(backToMenuBtn, &m_Game->GetTextureManager().Load("UI/Back_To_Main"), RenderLayer::Overlay);
 	registry.AddComponentToEntity<Button>(backToMenuBtn, ButtonAction::MainMenu);
 
 	m_Game->SetMouseVisibility(true);
@@ -307,27 +306,27 @@ void PlayingState::GameWon() {
 
 	Entity darkOverlay = registry.CreateEntity();
 	registry.AddComponentToEntity<Transform>(darkOverlay, Transform{ {0,0}, DefaultResolution });
-	registry.AddComponentToEntity<Renderable>(darkOverlay, &m_Game->GetTextureManager().Load("Overlay"), RenderLayer::UI);
+	registry.AddComponentToEntity<Renderable>(darkOverlay, &m_Game->GetTextureManager().Load("Overlay"), RenderLayer::UI2);
 
 	Entity stageClearedTitle = registry.CreateEntity();
 	registry.AddComponentToEntity<Transform>(stageClearedTitle, sf::Vector2f{ 340,150 }, sf::Vector2f{ 600,50 });
-	registry.AddComponentToEntity<Renderable>(stageClearedTitle, &m_Game->GetTextureManager().Load("Stage_Cleared"), RenderLayer::UI);
+	registry.AddComponentToEntity<Renderable>(stageClearedTitle, &m_Game->GetTextureManager().Load("Stage_Cleared"), RenderLayer::Overlay);
 
 	if (m_LevelData.levelNumber < 4) {
 		Entity nextLvlBtn = registry.CreateEntity();
 		registry.AddComponentToEntity<Transform>(nextLvlBtn, sf::Vector2f{ 390,300 }, sf::Vector2f{ 500,50 });
-		registry.AddComponentToEntity<Renderable>(nextLvlBtn, &m_Game->GetTextureManager().Load("UI/Next_Level"), RenderLayer::UI);
+		registry.AddComponentToEntity<Renderable>(nextLvlBtn, &m_Game->GetTextureManager().Load("UI/Next_Level"), RenderLayer::Overlay);
 		registry.AddComponentToEntity<Button>(nextLvlBtn, ButtonAction::StartGame, m_LevelData.levelNumber + 1);
 	}
 
 	Entity restartLvlBtn = registry.CreateEntity();
 	registry.AddComponentToEntity<Transform>(restartLvlBtn, sf::Vector2f{ 390,400 }, sf::Vector2f{ 500,50 });
-	registry.AddComponentToEntity<Renderable>(restartLvlBtn, &m_Game->GetTextureManager().Load("UI/Restart"), RenderLayer::UI);
+	registry.AddComponentToEntity<Renderable>(restartLvlBtn, &m_Game->GetTextureManager().Load("UI/Restart"), RenderLayer::Overlay);
 	registry.AddComponentToEntity<Button>(restartLvlBtn, ButtonAction::StartGame, m_LevelData.levelNumber);
 
 	Entity backToMenuBtn = registry.CreateEntity();
 	registry.AddComponentToEntity<Transform>(backToMenuBtn, sf::Vector2f{ 390,500 }, sf::Vector2f{ 500,50 });
-	registry.AddComponentToEntity<Renderable>(backToMenuBtn, &m_Game->GetTextureManager().Load("UI/Back_To_Main"), RenderLayer::UI);
+	registry.AddComponentToEntity<Renderable>(backToMenuBtn, &m_Game->GetTextureManager().Load("UI/Back_To_Main"), RenderLayer::Overlay);
 	registry.AddComponentToEntity<Button>(backToMenuBtn, ButtonAction::MainMenu);
 
 	m_Game->SetMouseVisibility(true);
@@ -339,7 +338,7 @@ void PlayingState::UpdatePaddle(InputState& inputState) {
 	sf::Vector2f mousePos = inputState.mousePos;
 
 	//Clamp paddle position within stage border
-	paddleTrans.position.x = std::min(980.f - paddleTrans.size.x, std::max(275.f, mousePos.x));
+	paddleTrans.position.x = std::min(1005.f - paddleTrans.size.x, std::max(275.f, mousePos.x));
 
 	if ((inputState.activeFire || inputState.activeIce || inputState.activeLight) && !m_LevelData.gameOverEnqueued) {
 		StatusEffect& paddleEff = reg.GetEntityComponent<StatusEffect>(m_StageEnts.paddleEnt);
@@ -466,7 +465,9 @@ void PlayingState::ManageEntities() {
 
 	//Process Change Entity Texture Events
 	for (auto event : registry.GetEventQueue().GetTEvents<ChangeTextureEvent>()) {
-		registry.GetEntityComponent<Renderable>(event->entity).texture = &m_Game->GetTextureManager().Load(event->newTextureName);
+		if (registry.EntityHasComponent<Renderable>(event->entity)) {
+			registry.GetEntityComponent<Renderable>(event->entity).texture = &m_Game->GetTextureManager().Load(event->newTextureName);
+		}
 	}
 
 	//Process Stage Events

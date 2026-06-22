@@ -11,9 +11,7 @@
 #include "EntityDestroyedEvent.h"
 #include "GameStateEvent.h"
 #include "StageEvent.h"
-
-//TESTING
-#include <iostream>
+#include "AudioEvent.h"
 
 
 void CollisionSystem::InitBlockGridMap() {
@@ -115,6 +113,7 @@ void CollisionSystem::RegisterCollisionHandlers() {
 
 				registry->GetEventQueue().Publish<PhysicsEvent>(event);
 				registry->GetEventQueue().Publish<StageEvent>(StageEvent::EventType::BallPaddleCollision);
+				registry->GetEventQueue().Publish<AudioEvent>(AudioAsset::FX_PaddleHit);
 			}
 		}
 	);
@@ -142,6 +141,7 @@ void CollisionSystem::RegisterCollisionHandlers() {
 				break;
 			}
 			registry->GetEventQueue().Publish<PhysicsEvent>(event);
+			registry->GetEventQueue().Publish<AudioEvent>(AudioAsset::FX_BorderHit);
 		}
 	);
 	m_CollisionHandlerMap.emplace(std::pair{ ColliderType::Ball, ColliderType::OutZone }, [registry = &regRef](Entity ball, Entity outZone, CollisionDetails colDet)
@@ -283,7 +283,6 @@ void CollisionSystem::Update() {
 					}
 				}
 				else {
-					//std::cout << "Block count: " << activeBlockCount << "\n";
 					Entity closestBlock = 0;
 					CollisionDetails closestHitDetails;
 					float closestDistSq = std::numeric_limits<float>::max();

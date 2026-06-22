@@ -4,6 +4,8 @@
 #include <memory>
 #include <array>
 
+#define BuildForPlayable 1
+
 // *** Game Configurations *** //
 #define TargetFixedUpdateFreq 144
 #define DefaultVolumeSetting 20

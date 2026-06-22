@@ -58,7 +58,7 @@ public:
 	}
 
 	T& GetTComponent(Entity ent) {
-		assert(m_EntityToComponentMap.contains(ent) && "Trying to get a component unassigned to entity {}", ent);
+		assert(m_EntityToComponentMap.contains(ent) && "Trying to get a component unassigned to an entity");
 		return m_ComponentArray[m_EntityToComponentMap[ent]];
 	}
 

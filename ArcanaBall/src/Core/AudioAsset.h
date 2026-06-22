@@ -11,6 +11,8 @@ enum class AudioAsset : uint8_t {
 //                           Mechanics Effects                        //
 //--------------------------------------------------------------------//
     FX_Slowmo           = 0x20,
+    FX_PaddleHit,
+    FX_BorderHit,
     FX_StoneBreak,
     FX_BrickHit,
     FX_BrickBreak,
@@ -28,8 +30,4 @@ enum class AudioAsset : uint8_t {
     Elem_IceShatter,
     Elem_Overload,
     Elem_LightningCross,
-//--------------------------------------------------------------------//
-//                           Ambience & Music                         //
-//--------------------------------------------------------------------//
-    Music_Test             = 0x70
 };

@@ -24,6 +24,8 @@ void AudioManager::PreloadAudio() {
 
 	//FX
 	loadAudio(AudioAsset::FX_Slowmo, "Slow_Mo");
+	loadAudio(AudioAsset::FX_PaddleHit, "Paddle_Hit");
+	loadAudio(AudioAsset::FX_BorderHit, "Border_Hit");
 	loadAudio(AudioAsset::FX_StoneBreak, "Stone_Break");
 	loadAudio(AudioAsset::FX_BrickHit, "Brick_Hit");
 	loadAudio(AudioAsset::FX_BrickBreak, "Brick_Break");

@@ -19,5 +19,5 @@ public:
 	virtual void Render(sf::RenderWindow&) = 0;
 
 public:
-	Game* m_Game;//Consider GameContext (struct of references to managers/window)
+	Game* m_Game;
 };

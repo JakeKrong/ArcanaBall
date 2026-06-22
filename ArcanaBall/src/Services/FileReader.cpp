@@ -3,10 +3,10 @@
 #include <sstream>
 #include <print>
 
-#ifdef _DEBUG
-static std::string m_GameDataBasePath = "../../../../ArcanaBall/assets/";
-#else
+#if BuildForPlayable
 static std::string m_GameDataBasePath = "assets/";
+#else
+static std::string m_GameDataBasePath = "../../../../ArcanaBall/assets/";
 #endif
 
 bool FileReader::ReadLevelData(std::unordered_map<int, StageGridData>& m_LevelData) {
@@ -62,6 +62,5 @@ bool FileReader::ReadLevelData(std::unordered_map<int, StageGridData>& m_LevelDa
         m_LevelData[currentLevel] = tempGrid;
     }
 
-    std::println("[Level Reader] Level data loaded. Cached {} stages successfully.", m_LevelData.size());
     return true;
 }

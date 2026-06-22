@@ -27,9 +27,6 @@ void InputManager::HandleEvent(const sf::Event& event) {
 		case(sf::Keyboard::Key::E):
 			m_InputState.activeLight = true;
 			break;
-		case(sf::Keyboard::Key::Space):
-			m_InputState.activeTimeSlow = true;
-			break;
 		}
 	}
 	else if (event.is<sf::Event::FocusLost>()) {
@@ -58,5 +55,4 @@ void InputManager::ResetInputs() {
 	m_InputState.activeFire = false;
 	m_InputState.activeIce = false;
 	m_InputState.activeLight = false;
-	m_InputState.activeTimeSlow = false;
 }

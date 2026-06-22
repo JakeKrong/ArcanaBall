@@ -8,6 +8,7 @@
 
 #include "AudioAsset.h"
 #include "EventQueue.h"
+#include "Types.h"
 
 using AudioID = uint16_t;
 
@@ -44,9 +45,9 @@ private:
     sf::Music m_Music;
     float m_AudioVolume;
 
-#ifdef _DEBUG
-    std::string m_SoundBasePath = "../../../../ArcanaBall/assets/audio/";
-#else 
+#if BuildForPlayable
     std::string m_SoundBasePath = "assets/audio/";
+#else 
+    std::string m_SoundBasePath = "../../../../ArcanaBall/assets/audio/";
 #endif
 };

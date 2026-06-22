@@ -1,7 +1,6 @@
 #include "EntityManager.h"
 
 #include "assert.h"
-#include <iostream>
 
 EntityManager::EntityManager() {
 	for (int i = 1; i <= ENTITY_CAP; i++) {

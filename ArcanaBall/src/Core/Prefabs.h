@@ -3,11 +3,13 @@
 #include "Types.h"
 #include "Registry.h"
 #include "TextureManager.h"
+#include "FontManager.h"
 
 namespace Prefab{
 	namespace UI {
 		std::array<Entity, 3> VolumeControl(Registry&, TextureManager&, float);
 		Entity LifeIndicator(Registry&, TextureManager&, int);
+		void Controls(Registry&, TextureManager&, FontManager&);
 	}
 	
 	namespace GameObject {

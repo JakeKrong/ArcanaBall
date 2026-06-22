@@ -7,8 +7,6 @@ struct InputState {
 	bool activeFire = false;
 	bool activeIce = false;
 	bool activeLight = false;
-	bool activeTimeSlow = false;
-
 	//Mouse
 	bool mouseClicked = false;
 	bool mouseReleased = false;

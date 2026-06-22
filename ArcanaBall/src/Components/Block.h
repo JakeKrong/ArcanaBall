@@ -24,7 +24,17 @@ struct Block {
 
 	using ResistMatrix = std::array<ResistanceLvl, 3>;
 
+	Block() = default;
+
+	Block(BlockType type, float durability, ResistMatrix resist) :
+		blockType(type),
+		durability(durability),
+		maxDurability(durability),
+		blockResist(resist)
+	{}
+
 	BlockType blockType = BlockType::Stone;
 	float durability = 1.f;
-	ResistMatrix blockResist{ };
+	float maxDurability = 1.f;
+	ResistMatrix blockResist{};
 };

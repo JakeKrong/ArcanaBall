@@ -8,9 +8,12 @@
 
 enum RenderLayer : uint8_t {
 	Background,
+	Background2,
 	GameObjects,
 	VFX,
 	UI,
+	UI2,
+	Overlay,
 	Text
 };
 
@@ -24,9 +27,11 @@ struct Renderable {
 
 struct RendText {
 	RendText() = default;
-	RendText(std::string text, sf::Font* font) :
+	RendText(std::string text, sf::Font* font, int size = 24, sf::Color color = sf::Color::White) :
 		text(std::move(text)),
-		font(font)
+		font(font),
+		size(size),
+		color(color)
 	{};
 	std::string text;
 	const sf::Font* font = nullptr;

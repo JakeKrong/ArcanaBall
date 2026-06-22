@@ -6,16 +6,16 @@
 std::array<Entity, 3> Prefab::UI::VolumeControl(Registry& reg, TextureManager& textMn, float currVolume) {
 	Entity volumeIcon = reg.CreateEntity();
 	reg.AddComponentToEntity<Transform>(volumeIcon, sf::Vector2f{ 960,25 }, sf::Vector2f{ 50,50 });
-	reg.AddComponentToEntity<Renderable>(volumeIcon, &textMn.Load("UI/Volume"), RenderLayer::UI);
+	reg.AddComponentToEntity<Renderable>(volumeIcon, &textMn.Load("UI/Volume"), RenderLayer::UI2);
 
 	Entity volumeSlider = reg.CreateEntity();
 	reg.AddComponentToEntity<Transform>(volumeSlider, sf::Vector2f{ 1025,35 }, sf::Vector2f{ 180,30 });
-	reg.AddComponentToEntity<Renderable>(volumeSlider, &textMn.Load("UI/Slider"), RenderLayer::UI);
+	reg.AddComponentToEntity<Renderable>(volumeSlider, &textMn.Load("UI/Slider"), RenderLayer::UI2);
 
 	Entity sliderButton = reg.CreateEntity();
 	float currSliderX = 1035.f + (currVolume / DefaultVolumeSetting * 75.f);
 	reg.AddComponentToEntity<Transform>(sliderButton, sf::Vector2f{ currSliderX,35 }, sf::Vector2f{ 15,22 });
-	reg.AddComponentToEntity<Renderable>(sliderButton, &textMn.Load("UI/Slider_Butt"), RenderLayer::UI);
+	reg.AddComponentToEntity<Renderable>(sliderButton, &textMn.Load("UI/Slider_Butt"), RenderLayer::UI2);
 	reg.AddComponentToEntity<Button>(sliderButton, ButtonAction::AdjustVolume);
 
 	return { volumeIcon, volumeSlider, sliderButton };
@@ -28,9 +28,41 @@ Entity Prefab::UI::LifeIndicator(Registry& reg, TextureManager& textMn, int numb
 	return lifeInd;
 }
 
+void Prefab::UI::Controls(Registry& reg, TextureManager& textMn, FontManager& fontMn) {
+	Entity controlFrame = reg.CreateEntity();
+	reg.AddComponentToEntity<Transform>(controlFrame, sf::Vector2f{ 12.5,150 }, sf::Vector2f{ 230, 382 });
+	reg.AddComponentToEntity<Renderable>(controlFrame, &textMn.Load("UI/Controls"), RenderLayer::VFX);
+
+	Entity infuseFireText = reg.CreateEntity();
+	reg.AddComponentToEntity<Transform>(infuseFireText, sf::Vector2f{ 80,230 });
+	reg.AddComponentToEntity<Renderable>(infuseFireText, nullptr, RenderLayer::UI);
+	reg.AddComponentToEntity<RendText>(infuseFireText, "Fire Infusion", &fontMn.GetFont("pala"), 22, sf::Color::Red);
+
+	Entity infuseIceText = reg.CreateEntity();
+	reg.AddComponentToEntity<Transform>(infuseIceText, sf::Vector2f{ 80,275 });
+	reg.AddComponentToEntity<Renderable>(infuseIceText, nullptr, RenderLayer::UI);
+	reg.AddComponentToEntity<RendText>(infuseIceText, "Ice Infusion", &fontMn.GetFont("pala"), 22, sf::Color::Cyan);
+
+	Entity infuseLightningText = reg.CreateEntity();
+	reg.AddComponentToEntity<Transform>(infuseLightningText, sf::Vector2f{ 80,310});
+	reg.AddComponentToEntity<Renderable>(infuseLightningText, nullptr, RenderLayer::UI);
+	reg.AddComponentToEntity<RendText>(infuseLightningText, "Lightning\nInfusion", &fontMn.GetFont("pala"), 22, sf::Color::Magenta);
+
+	Entity launchBallText = reg.CreateEntity();
+	reg.AddComponentToEntity<Transform>(launchBallText, sf::Vector2f{ 80,385 });
+	reg.AddComponentToEntity<Renderable>(launchBallText, nullptr, RenderLayer::UI);
+	reg.AddComponentToEntity<RendText>(launchBallText, "Launch Ball", &fontMn.GetFont("pala"), 22);
+
+	Entity pauseGameText = reg.CreateEntity();
+	reg.AddComponentToEntity<Transform>(pauseGameText, sf::Vector2f{ 85,450 });
+	reg.AddComponentToEntity<Renderable>(pauseGameText, nullptr, RenderLayer::UI);
+	reg.AddComponentToEntity<RendText>(pauseGameText, "Pause Game", &fontMn.GetFont("pala"), 22);
+
+}
+
 Entity Prefab::GameObject::Paddle(Registry& reg, TextureManager& textMn) {
 	Entity paddle = reg.CreateEntity();
-	reg.AddComponentToEntity<Transform>(paddle, sf::Vector2f{ 640,600 }, sf::Vector2f{ 110,15 });
+	reg.AddComponentToEntity<Transform>(paddle, sf::Vector2f{ 640,625 }, sf::Vector2f{ 110,15 });
 	reg.AddComponentToEntity<Renderable>(paddle, &textMn.Load("GameObject/Paddle"), RenderLayer::GameObjects);
 	reg.AddComponentToEntity<Collider>(paddle, ColliderType::Paddle, ColliderShape::Rectangle);
 	reg.AddComponentToEntity<Physics>(paddle, sf::Vector2f{ 0,0 });
@@ -55,15 +87,15 @@ Entity Prefab::GameObject::BallElementEff(Registry& reg, TextureManager& textMn,
 	reg.AddComponentToEntity<Transform>(ballEff, ballPos, sf::Vector2f{ 20,20 });
 	switch (elem) {
 	case(ElemInfusion::Fire):
-		reg.AddComponentToEntity<Renderable>(ballEff, &textMn.Load("Effects/Fire_Ball_Overlay"), RenderLayer::GameObjects);
+		reg.AddComponentToEntity<Renderable>(ballEff, &textMn.Load("Effects/Fire_Ball_Overlay"), RenderLayer::VFX);
 		reg.AddComponentToEntity<AnimationData>(ballEff, sf::Vector2i{ 3,2 }, 6, .125f, true);
 		break;
 	case(ElemInfusion::Ice):
-		reg.AddComponentToEntity<Renderable>(ballEff, &textMn.Load("Effects/Ice_Ball_Overlay"), RenderLayer::GameObjects);
+		reg.AddComponentToEntity<Renderable>(ballEff, &textMn.Load("Effects/Ice_Ball_Overlay"), RenderLayer::VFX);
 		reg.AddComponentToEntity<AnimationData>(ballEff, sf::Vector2i{ 3,2 }, 6, .2f, true);
 		break;
 	case(ElemInfusion::Lightning):
-		reg.AddComponentToEntity<Renderable>(ballEff, &textMn.Load("Effects/Lightning_Ball_Overlay"), RenderLayer::GameObjects);
+		reg.AddComponentToEntity<Renderable>(ballEff, &textMn.Load("Effects/Lightning_Ball_Overlay"), RenderLayer::VFX);
 		reg.AddComponentToEntity<AnimationData>(ballEff, sf::Vector2i{ 3,2 }, 6, .1f, true);
 		break;
 	}
@@ -79,7 +111,8 @@ Entity Prefab::GameObject::Stone(Registry& reg, TextureManager& textMn, sf::Vect
 	reg.AddComponentToEntity<Transform>(stone, position, sf::Vector2f{ BLOCK_WIDTH,BLOCK_HEIGHT });
 	reg.AddComponentToEntity<Renderable>(stone, &textMn.Load("GameObject/Stone"), RenderLayer::GameObjects);
 	reg.AddComponentToEntity<Collider>(stone, ColliderType::Block, ColliderShape::Rectangle);
-	reg.AddComponentToEntity<Block>(stone, BlockType::Stone, 1.f);
+	reg.AddComponentToEntity<Block>(stone, BlockType::Stone, 1.f,
+		Block::ResistMatrix{ Block::ResistanceLvl::Vulnerable, Block::ResistanceLvl::Vulnerable, Block::ResistanceLvl::Vulnerable });
 	reg.AddComponentToEntity<StatusEffect>(stone);
 
 	return stone;
@@ -90,7 +123,7 @@ Entity Prefab::GameObject::Brick(Registry& reg, TextureManager& textMn, sf::Vect
 	reg.AddComponentToEntity<Transform>(brick, position, sf::Vector2f{ BLOCK_WIDTH,BLOCK_HEIGHT });
 	reg.AddComponentToEntity<Renderable>(brick, &textMn.Load("GameObject/Brick"), RenderLayer::GameObjects);
 	reg.AddComponentToEntity<Collider>(brick, ColliderType::Block, ColliderShape::Rectangle);
-	reg.AddComponentToEntity<Block>(brick, BlockType::Brick, 2.f, 
+	reg.AddComponentToEntity<Block>(brick, BlockType::Brick, 4.f, 
 		Block::ResistMatrix{Block::ResistanceLvl::Susceptible, Block::ResistanceLvl::Vulnerable, Block::ResistanceLvl::Susceptible });
 	reg.AddComponentToEntity<StatusEffect>(brick);
 
@@ -102,7 +135,7 @@ Entity Prefab::GameObject::Wood(Registry& reg, TextureManager& textMn, sf::Vecto
 	reg.AddComponentToEntity<Transform>(wood, position, sf::Vector2f{ BLOCK_WIDTH,BLOCK_HEIGHT });
 	reg.AddComponentToEntity<Renderable>(wood, &textMn.Load("GameObject/Wood"), RenderLayer::GameObjects);
 	reg.AddComponentToEntity<Collider>(wood, ColliderType::Block, ColliderShape::Rectangle);
-	reg.AddComponentToEntity<Block>(wood, BlockType::Wood, 2.f, 
+	reg.AddComponentToEntity<Block>(wood, BlockType::Wood, 6.f, 
 		Block::ResistMatrix{ Block::ResistanceLvl::Vulnerable, Block::ResistanceLvl::Immune, Block::ResistanceLvl::Susceptible });
 	reg.AddComponentToEntity<StatusEffect>(wood);
 
@@ -152,15 +185,15 @@ void Prefab::GameObject::BlockElementEff(Registry& reg, TextureManager& textMn, 
 	reg.AddComponentToEntity<Transform>(blockEff, blockPos, sf::Vector2f{ BLOCK_WIDTH, BLOCK_HEIGHT });
 	switch (elem) {
 	case(ElemInfusion::Fire):
-		reg.AddComponentToEntity<Renderable>(blockEff, &textMn.Load("Effects/Fire_Block_Overlay"), RenderLayer::GameObjects);
+		reg.AddComponentToEntity<Renderable>(blockEff, &textMn.Load("Effects/Fire_Block_Overlay"), RenderLayer::VFX);
 		reg.AddComponentToEntity<AnimationData>(blockEff, sf::Vector2i{ 3,2 }, 6, .125f, true);
 		break;
 	case(ElemInfusion::Ice):
-		reg.AddComponentToEntity<Renderable>(blockEff, &textMn.Load("Effects/Ice_Block_Overlay"), RenderLayer::GameObjects);
+		reg.AddComponentToEntity<Renderable>(blockEff, &textMn.Load("Effects/Ice_Block_Overlay"), RenderLayer::VFX);
 		reg.AddComponentToEntity<AnimationData>(blockEff, sf::Vector2i{ 3,2 }, 6, .2f, true);
 		break;
 	case(ElemInfusion::Lightning):
-		reg.AddComponentToEntity<Renderable>(blockEff, &textMn.Load("Effects/Lightning_Block_Overlay"), RenderLayer::GameObjects);
+		reg.AddComponentToEntity<Renderable>(blockEff, &textMn.Load("Effects/Lightning_Block_Overlay"), RenderLayer::VFX);
 		reg.AddComponentToEntity<AnimationData>(blockEff, sf::Vector2i{ 3,2 }, 6, .1f, true);
 		break;
 	}
@@ -176,12 +209,12 @@ void Prefab::GameObject::LevelBorders(Registry& reg, TextureManager& textMn) {
 	reg.AddComponentToEntity<Collider>(leftWall, ColliderType::Border, ColliderShape::Rectangle);
 
 	Entity rightWall = reg.CreateEntity();
-	reg.AddComponentToEntity<Transform>(rightWall, sf::Vector2f{ 980,0 }, sf::Vector2f{ 25,720 });
+	reg.AddComponentToEntity<Transform>(rightWall, sf::Vector2f{ 1005,0 }, sf::Vector2f{ 25,720 });
 	reg.AddComponentToEntity<Renderable>(rightWall, &textMn.Load("Level_Border"), RenderLayer::GameObjects, true, true);
 	reg.AddComponentToEntity<Collider>(rightWall, ColliderType::Border, ColliderShape::Rectangle);
 
 	Entity topWall = reg.CreateEntity();
-	reg.AddComponentToEntity<Transform>(topWall, sf::Vector2f{ 275,0 }, sf::Vector2f{ 705,25 });
+	reg.AddComponentToEntity<Transform>(topWall, sf::Vector2f{ 275,0 }, sf::Vector2f{ 730,25 });
 	reg.AddComponentToEntity<Renderable>(topWall, &textMn.Load("Level_Border_Top"), RenderLayer::GameObjects);
 	reg.AddComponentToEntity<Collider>(topWall, ColliderType::Border, ColliderShape::Rectangle);
 
@@ -195,7 +228,6 @@ Entity Prefab::GameObject::KillZone(Registry& reg) {
 	return killZone;
 }
 
-
 // ********** REACTIONS ********** //
 void Prefab::Reaction::IceShatter(Registry& reg, TextureManager& textMn, sf::Vector2f blockPos) {
 	Entity shatterEffect = reg.CreateEntity();
@@ -203,7 +235,7 @@ void Prefab::Reaction::IceShatter(Registry& reg, TextureManager& textMn, sf::Vec
 	transform.position = { blockPos.x - (BLOCK_WIDTH / 2) , blockPos.y - (BLOCK_HEIGHT / 2) };
 	transform.size = { BLOCK_WIDTH * 2, BLOCK_HEIGHT * 2 };
 	reg.AddComponentToEntity<Transform>(shatterEffect, transform);
-	reg.AddComponentToEntity<Renderable>(shatterEffect, &textMn.Load("Effects/Ice_Shatter"), RenderLayer::GameObjects);
+	reg.AddComponentToEntity<Renderable>(shatterEffect, &textMn.Load("Effects/Ice_Shatter"), RenderLayer::VFX);
 	reg.AddComponentToEntity<AnimationData>(shatterEffect, sf::Vector2i{ 2,2 }, 4, .067f, false);
 
 	Entity shatterCollider = reg.CreateEntity();
@@ -247,7 +279,7 @@ void Prefab::Reaction::Overload(Registry& reg, TextureManager& textMn, sf::Vecto
 			rend.flipY = true;
 			break;
 		}
-		rend.layer = RenderLayer::GameObjects;
+		rend.layer = RenderLayer::VFX;
 
 		reg.AddComponentToEntity<Transform>(overloadEffect, transform);
 		reg.AddComponentToEntity<Renderable>(overloadEffect, rend);
@@ -263,7 +295,7 @@ void Prefab::Reaction::Overload(Registry& reg, TextureManager& textMn, sf::Vecto
 
 		Entity extraEff = reg.CreateEntity();
 		reg.AddComponentToEntity<Transform>(extraEff, blockPos, sf::Vector2f{BLOCK_WIDTH, BLOCK_HEIGHT});
-		reg.AddComponentToEntity<Renderable>(extraEff, &textMn.Load("Effects/Overload"), RenderLayer::GameObjects);
+		reg.AddComponentToEntity<Renderable>(extraEff, &textMn.Load("Effects/Overload"), RenderLayer::VFX);
 		reg.AddComponentToEntity<AnimationData>(extraEff, sf::Vector2i{ 4,2 }, 8, .055f, false);
 	}
 }
@@ -301,7 +333,7 @@ void Prefab::Reaction::LightningCross(Registry& reg, TextureManager& textMn, sf:
 			rend.flipY = true;
 			break;
 		}
-		rend.layer = RenderLayer::GameObjects;
+		rend.layer = RenderLayer::VFX;
 
 		reg.AddComponentToEntity<Transform>(lightningEffect, transform);
 		reg.AddComponentToEntity<Renderable>(lightningEffect, rend);
