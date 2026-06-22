@@ -6,11 +6,11 @@
 std::array<Entity, 3> Prefab::UI::VolumeControl(Registry& reg, TextureManager& textMn, float currVolume) {
 	Entity volumeIcon = reg.CreateEntity();
 	reg.AddComponentToEntity<Transform>(volumeIcon, sf::Vector2f{ 960,25 }, sf::Vector2f{ 50,50 });
-	reg.AddComponentToEntity<Renderable>(volumeIcon, &textMn.Load("UI/Volume"), RenderLayer::UI2);
+	reg.AddComponentToEntity<Renderable>(volumeIcon, &textMn.Load("UI/Volume"), RenderLayer::UI);
 
 	Entity volumeSlider = reg.CreateEntity();
 	reg.AddComponentToEntity<Transform>(volumeSlider, sf::Vector2f{ 1025,35 }, sf::Vector2f{ 180,30 });
-	reg.AddComponentToEntity<Renderable>(volumeSlider, &textMn.Load("UI/Slider"), RenderLayer::UI2);
+	reg.AddComponentToEntity<Renderable>(volumeSlider, &textMn.Load("UI/Slider"), RenderLayer::UI);
 
 	Entity sliderButton = reg.CreateEntity();
 	float currSliderX = 1035.f + (currVolume / DefaultVolumeSetting * 75.f);

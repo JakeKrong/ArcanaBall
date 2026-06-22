@@ -8,7 +8,6 @@
 
 enum RenderLayer : uint8_t {
 	Background,
-	Background2,
 	GameObjects,
 	VFX,
 	UI,

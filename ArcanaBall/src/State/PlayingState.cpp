@@ -104,7 +104,7 @@ void PlayingState::Enter() {
 	registry.AddComponentToEntity<Renderable>(background, &m_Game->GetTextureManager().Load("Forest_Background"), RenderLayer::Background);
 	Entity overlay = registry.CreateEntity();
 	registry.AddComponentToEntity<Transform>(overlay, sf::Vector2f{ 270,0 }, sf::Vector2f({ 745,720 }));
-	registry.AddComponentToEntity<Renderable>(overlay, &m_Game->GetTextureManager().Load("Overlay"), RenderLayer::Background2);
+	registry.AddComponentToEntity<Renderable>(overlay, &m_Game->GetTextureManager().Load("Overlay"), RenderLayer::Background);
 
 	Prefab::UI::Controls(registry, m_Game->GetTextureManager(), m_Game->GetFontManager());
 
@@ -234,7 +234,7 @@ void PlayingState::PauseGame() {
 
 	Entity darkOverlay = registry.CreateEntity();
 	registry.AddComponentToEntity<Transform>(darkOverlay, Transform{ {0,0}, DefaultResolution });
-	registry.AddComponentToEntity<Renderable>(darkOverlay, &m_Game->GetTextureManager().Load("Overlay"), RenderLayer::UI2);
+	registry.AddComponentToEntity<Renderable>(darkOverlay, &m_Game->GetTextureManager().Load("Overlay"), RenderLayer::UI);
 	m_OverlayEnt.push_back(darkOverlay);
 
 	Entity pauseTitle = registry.CreateEntity();
