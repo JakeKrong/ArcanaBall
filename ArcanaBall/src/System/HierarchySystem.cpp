@@ -9,7 +9,9 @@ void HierarchySystem::Update() {
 
 	for (auto& event : m_Registry->GetEventQueue().GetTEvents<DestroyChildEntity>()) {
 		for (Entity ent : m_Entities) {
-			if (childCompArr.GetTComponent(ent).parentEntity == event->parentEntity) m_Registry->DestroyEntity(ent);
+			if (childCompArr.GetTComponent(ent).parentEntity == event->parentEntity) {
+				m_Registry->DestroyEntity(ent);
+			}
 		}
 	}
 
