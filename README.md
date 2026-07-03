@@ -1,98 +1,148 @@
-\# ArcanaBall
+# ArcanaBall
 
+**ArcanaBall** is a creative interpretation of the classic brick-breaker genre built with **C++23** and **SFML 3.0**. The game combines traditional arcade gameplay with tactical elemental magic, allowing players to infuse their projectiles with magical attributes that trigger devastating elemental reactions.
 
+---
 
-ArcanaBall is a creative interpretation brick-breaker game built using \*\*C++23\*\* and \*\*SFML 3.0\*\*. The game blends classic arcade breakout mechanics with a tactical layer of magical elements and status reactions. Players infuse their projectiles with elemental forces to trigger explosive chain reactions, offering a unique strategy-driven twist to the classic genre.
+## 🎮 Core Gameplay
 
+Your objective is simple:
 
+- Destroy every block in the stage.
+- Prevent the ball from falling off the bottom of the screen.
+- Use elemental abilities strategically to clear levels efficiently.
 
-\## Core Gameplay \& Objectives
+### ✨ Elemental Combat
 
+The paddle can imbue the ball with magical elements. Different block types possess unique durability, resistances, and elemental weaknesses.
 
+Combining elements creates powerful reactions, including:
 
-\* \*\*The Main Objective:\*\* Destroy every block present on the stage while carefully keeping the ball from falling off the bottom of the screen.
+- ❄️ **Ice Shatter**
+- ⚡ **Lightning Cross**
+- *(and more)*
 
-\* \*\*Tactical Attributes:\*\* Different block types populate each stage, featuring unique durability, resistances, and distinct elemental vulnerabilities.
+Mastering these reactions is the key to clearing difficult stages before running out of lives.
 
-\* \*\*Elemental Reactions:\*\* Infuse the ball with magical properties using the paddle. Strike blocks to trigger powerful combination reactions (such as \*Ice Shatter\* or \*Lightning Cross\*) to decimate various grid layouts efficiently before running out of lives.
+---
 
+## 🏗️ Engine Architecture
 
+ArcanaBall is powered by a custom-built, data-oriented Entity Component System (ECS) designed for performance and scalability.
 
-\---
+### Registry & Contiguous Storage
 
+Components are stored contiguously in memory to maximize CPU cache locality and iteration performance.
 
+### O(1) Entity Operations
 
-\## Architectural Features (Custom ECS Engine)
+The entity manager uses:
 
+- Bitset component signatures
+- ID recycling queues
 
+This provides deterministic **O(1)** entity creation, destruction, and component lookup.
 
-ArcanaBall runs on an optimized, data-oriented Entity Component System (ECS) built from scratch:
+### Spatial Partitioning
 
+Collision detection uses an optimized 2D grid broad-phase to significantly reduce unnecessary intersection tests.
 
+### Deferred Event Queue
 
-\* \*\*Registry \& Contiguous Storage:\*\* Maximizes CPU cache locality by storing components contiguously in memory arrays.
+Systems communicate through a type-safe deferred event queue, preventing iterator invalidation and maintaining memory safety during gameplay.
 
-\* \*\*Constant Time O(1) Operations:\*\* The entity manager utilizes a bitset signature mapping paired with an ID recycling queue to achieve deterministic component access, creation, and destruction.
+---
 
-\* \*\*Spatial Partitioning Broad-Phase:\*\* Collision detection maps entities into an optimized 2D grid matrix to drastically reduce intersection checks.
+# 🚀 Getting Started
 
-\* \*\*Decoupled Event Queue:\*\* System communication is strictly decoupled via a type-safe, deferred event queue to avoid iterator invalidations and preserve memory safety across game states.
+## Prerequisites
 
+The project automatically downloads external dependencies during configuration.
 
+You'll need:
 
-\---
+- **Visual Studio** with the **Desktop development with C++** workload
 
+**or**
 
+- A C++23-compatible compiler
+- **CMake 3.24+**
 
-\## Getting Started
+Additionally:
 
+- **Git** (required by CMake to fetch SFML automatically)
 
+---
 
-\### Prerequisites
+# 🔨 Building
 
+## Option 1 — Visual Studio (Recommended)
 
+1. Extract `ArcanaBall.zip`.
+2. Open **Visual Studio**.
+3. Select **Open a local folder**.
+4. Choose the extracted `ArcanaBall` directory.
+5. Visual Studio will detect the `CMakeLists.txt` and automatically configure the project.
+6. Wait for CMake to finish downloading SFML.
+7. Select **ArcanaBall.exe** as the startup item.
+8. Click **Build** or press **F5** to run.
 
-The project handles its own external library dependencies automatically. You only need the following installed on your host machine:
+---
 
-\* \*\*Visual Studio\*\* (with the \*Desktop development with C++\* workload checked)
+## Option 2 — Command Line
 
-\* Alternatively, a standalone compiler supporting \*\*C++23\*\* and \*\*CMake 3.24+\*\*
+Open a terminal inside the project directory.
 
-\* \*\*Git\*\* (required by CMake to automatically pull and fetch dependencies)
+### Configure
 
+```bash
+mkdir build
+cd build
 
+cmake ..
+```
 
-\---
+### Build
 
+```bash
+cmake --build . --config Release
+```
 
+### Run
 
-\### Building the Project
+```bash
+./ArcanaBall
+```
 
+> On Windows with Visual Studio generators, the executable will typically be located in:
+>
+> ```text
+> build/Release/ArcanaBall.exe
+> ```
 
+---
 
-\#### Option 1: Via Visual Studio (Recommended)
+## 🛠️ Technologies
 
-1\. Extract `ArcanaBall.zip`.
+- C++23
+- SFML 3.0
+- CMake 3.24+
 
-2\. Open Visual Studio and select \*\*Open a local folder\*\*.
+---
 
-3\. Choose the extracted `ArcanaBall` directory. Visual Studio will automatically detect the `CMakeLists.txt` and generate the cache (fetching SFML in the background).
+## 📁 Project Structure
 
-4\. Select `ArcanaBall.exe` from the startup item dropdown and click \*\*Build / Run\*\*.
+```text
+ArcanaBall/
+├── assets/
+├── src/
+├── include/
+├── CMakeLists.txt
+└── README.md
+```
 
+---
 
+## 📜 License
 
-\#### Option 2: Via Command Line
-
-1\. Extract `ArcanaBall.zip` and open a terminal inside the directory.
-
-2\. Generate the build configuration (this step automatically fetches the SFML source):
-
-&#x20;  ```bash
-
-&#x20;  mkdir build
-
-&#x20;  cd build
-
-&#x20;  cmake ..
-
+This project is intended for educational and portfolio purposes.
