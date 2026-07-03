@@ -1,8 +1,18 @@
 # ArcanaBall
 
+<img width="426" height="240" alt="ArcanaBall_Showcase" src="https://github.com/user-attachments/assets/0569babd-e9a0-4e13-9de9-00c63efc67fe" />
+
+
 **ArcanaBall** is a creative interpretation of the classic brick-breaker genre built with **C++23** and **SFML 3.0**. The game combines traditional arcade gameplay with tactical elemental magic, allowing players to infuse their projectiles with magical attributes that trigger devastating elemental reactions.
 
 ---
+
+## 📥 Download
+**[Click here to download the latest version (v1.0)](https://github.com/JakeKrong/ArcanaBall/releases/tag/v1.0)**
+
+1. Download the `ArcanaBall.zip` file.
+2. Extract all files to a folder.
+3. Run `ArcanaBall.exe` in the root folder.
 
 ## 🎮 Core Gameplay
 
@@ -20,7 +30,7 @@ Combining elements creates powerful reactions, including:
 
 - ❄️ **Ice Shatter**
 - ⚡ **Lightning Cross**
-- *(and more)*
+- 🔥 **Overload**
 
 Mastering these reactions is the key to clearing difficult stages before running out of lives.
 
