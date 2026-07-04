@@ -16,7 +16,7 @@
 using Entity = std::uint16_t;
 using ComponentID = std::uint16_t;
 
-const Entity ENTITY_CAP = 500;			//Expected upper limit for entity count
+const Entity ENTITY_CAP = 750;			//Expected upper limit for entity count
 const ComponentID COMPONENT_CAP = 16;	//Cap for component types
 
 using Signature = std::bitset<COMPONENT_CAP>;

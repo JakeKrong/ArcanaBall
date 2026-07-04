@@ -7,9 +7,11 @@ void HierarchySystem::Update() {
 	auto& childCompArr = m_Registry->GetComponentArray<Child>();
 	auto& transCompArr = m_Registry->GetComponentArray<Transform>();
 
+	auto test = m_Registry->GetEventQueue().GetTEvents<DestroyChildEntity>();
 	for (auto& event : m_Registry->GetEventQueue().GetTEvents<DestroyChildEntity>()) {
 		for (Entity ent : m_Entities) {
-			if (childCompArr.GetTComponent(ent).parentEntity == event->parentEntity) {
+			if (m_Registry->EntityHasComponent<Child>(ent) && 
+				childCompArr.GetTComponent(ent).parentEntity == event->parentEntity) {
 				m_Registry->DestroyEntity(ent);
 			}
 		}
