@@ -62,3 +62,19 @@ target_link_libraries(ArcanaBall PRIVATE
 	SFML::System
 	SFML::Audio
 )
+
+# --- Unit tests (Catch2) ---
+# Requires Catch2 FetchContent from top-level CMake; link Catch2::Catch2WithMain
+add_executable(ArcanaBall_tests "tests/EcsTests.cpp" ${GAME_SOURCES})
+
+target_include_directories(ArcanaBall_tests PRIVATE ${INCLUDE_DIRS})
+target_link_libraries(ArcanaBall_tests PRIVATE 
+	SFML::Graphics
+	SFML::Window
+	SFML::System
+	SFML::Audio
+	Catch2::Catch2WithMain
+)
+
+enable_testing()
+add_test(NAME ECS_Core_Tests COMMAND ArcanaBall_tests)

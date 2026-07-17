@@ -19,6 +19,9 @@ void StateManager::ChangeState(Scope<IState> iState) {
 }
 
 void StateManager::EnqueueChangeState(Scope<IState> iState) {
-	if (m_CurrentState) m_CurrentState->Exit();
+	if (m_CurrentState) {
+		m_CurrentState->Exit();
+		m_CurrentState.reset();
+	}
 	m_PendingState = std::move(iState);
 }
