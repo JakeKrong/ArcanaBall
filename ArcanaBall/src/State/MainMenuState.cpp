@@ -97,6 +97,7 @@ void MainMenuState::Update(float deltaTime)
 			for (auto ent : m_OverlayEnt) {
 				reg.DestroyEntity(ent);
 			}
+			m_OverlayEnt.clear();
 			m_UISystem.SetButtonsEnabled(true);
 			break;
 		}
@@ -121,7 +122,7 @@ void MainMenuState::SelectLevel() {
 	Registry& registry = m_Game->GetRegistry();
 
 	Entity darkOverlay = registry.CreateEntity();
-	registry.AddComponentToEntity<Transform>(darkOverlay, Transform{ {0,0}, DefaultResolution });
+	registry.AddComponentToEntity<Transform>(darkOverlay, Transform{ {0,0}, sf::Vector2f(DefaultResolution) });
 	registry.AddComponentToEntity<Renderable>(darkOverlay, &m_Game->GetTextureManager().Load("Overlay"), RenderLayer::UI2);
 	m_OverlayEnt.push_back(darkOverlay);
 
@@ -162,7 +163,7 @@ void MainMenuState::GameGuide() {
 	Registry& registry = m_Game->GetRegistry();
 
 	Entity darkOverlay = registry.CreateEntity();
-	registry.AddComponentToEntity<Transform>(darkOverlay, Transform{ {0,0}, DefaultResolution });
+	registry.AddComponentToEntity<Transform>(darkOverlay, Transform{ {0,0}, sf::Vector2f(DefaultResolution) });
 	registry.AddComponentToEntity<Renderable>(darkOverlay, &m_Game->GetTextureManager().Load("Overlay"), RenderLayer::UI2);
 	m_OverlayEnt.push_back(darkOverlay);
 

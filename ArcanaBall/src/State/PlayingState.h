@@ -34,6 +34,7 @@ private:
 	BlockSystem& m_BlockSystem;
 	HierarchySystem& m_HierarchySystem;
 	AnimationSystem& m_AnimationSystem;
+	LifetimeSystem& m_LifetimeSystem;
 
 	struct LevelData {
 		StageGridData& stageGrid;
@@ -58,5 +59,6 @@ private:
 
 	LevelData m_LevelData;
 	StageEnts m_StageEnts;
+	float m_StepAccumulator{ 0.f };
 	std::vector<Entity> m_OverlayEnt;
 };

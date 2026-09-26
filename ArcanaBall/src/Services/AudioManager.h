@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <list>
 #include <unordered_map>
 #include <SFML/Audio/Sound.hpp>
 #include <SFML/Audio/SoundBuffer.hpp>
@@ -45,9 +46,5 @@ private:
     sf::Music m_Music;
     float m_AudioVolume;
 
-#if BuildForPlayable
     std::string m_SoundBasePath = "assets/audio/";
-#else 
-    std::string m_SoundBasePath = "../../../../ArcanaBall/assets/audio/";
-#endif
 };

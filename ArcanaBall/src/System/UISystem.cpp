@@ -7,7 +7,11 @@
 #include "MenuNavEvent.h"
 #include "AudioEvent.h"
 
-#include <iostream>
+//Drag the slider handle to the cursor and report the volume its new position represents
+static float SlideVolumeHandle(Transform& handleTrans, float mouseX) {
+	handleTrans.position.x = std::clamp(mouseX, VolumeSliderMinX, VolumeSliderMaxX);
+	return (handleTrans.position.x - VolumeSliderMinX) / (VolumeSliderMaxX - VolumeSliderMinX) * MaxVolumeSetting;
+}
 
 void UISystem::Update(const InputState& input){
 	if (!m_Registry || m_Entities.size() == 0) {
@@ -59,10 +63,7 @@ void UISystem::Update(const InputState& input){
 					case ButtonAction::AdjustVolume:
 					{
 						buttonComp.checkHold = true;
-						float minX = 1035, maxX = 1185;
-						transComp.position.x = std::clamp(input.mousePos.x, minX, maxX);
-						float newVolume = (transComp.position.x - minX) / ((maxX - minX) / 2) * DefaultVolumeSetting;
-						m_Registry->GetEventQueue().Publish<VolumeChangedEvent>(newVolume);
+						m_Registry->GetEventQueue().Publish<VolumeChangedEvent>(SlideVolumeHandle(transComp, input.mousePos.x));
 						break;
 					}
 					default:
@@ -86,10 +87,7 @@ void UISystem::Update(const InputState& input){
 				case(ButtonAction::AdjustVolume):
 				{
 					Transform& transComp = m_Registry->GetEntityComponent<Transform>(ent);
-					float minX = 1035, maxX = 1185;
-					transComp.position.x = std::clamp(input.mousePos.x, minX, maxX);
-					float newVolume = (transComp.position.x - minX) / ((maxX - minX) /2) * DefaultVolumeSetting;
-					m_Registry->GetEventQueue().Publish<VolumeChangedEvent>(newVolume);
+					m_Registry->GetEventQueue().Publish<VolumeChangedEvent>(SlideVolumeHandle(transComp, input.mousePos.x));
 					break;
 				}
 				default:

@@ -10,4 +10,7 @@ public:
 	void TriggerReaction(ElemInfusion, ElemInfusion, sf::Vector2f);
 	void UpdateBlockSprite(BlockType, Entity, float, float, float);
 	void QueueBlockAudio(BlockType, bool);
+
+private:
+	bool m_AllBlocksCleared = false;
 };

@@ -6,7 +6,7 @@
 #include <SFML/Graphics/Font.hpp>
 #include <SFML/Graphics/Color.hpp>
 
-enum RenderLayer : uint8_t {
+enum class RenderLayer : uint8_t {
 	Background,
 	GameObjects,
 	VFX,
@@ -18,7 +18,7 @@ enum RenderLayer : uint8_t {
 
 struct Renderable {
 	const sf::Texture* texture = nullptr;
-	RenderLayer layer{ 0 };
+	RenderLayer layer{ RenderLayer::Background };
 	bool visible{ true };
 	bool flipX{ false };
 	bool flipY{ false };

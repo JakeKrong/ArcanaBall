@@ -22,8 +22,8 @@ struct ColliderBody {
 	Transform& transform;
 };
 
-struct CollisionDetails {
-	HitFromDir hitDir;
+struct CollisionDetails {		//Currently for checking ball-block hit direction
+	HitFromDir hitDir{ HitFromDir::None };
 	sf::Vector2f pointOfContact{ 0,0 };
 };
 
@@ -47,7 +47,7 @@ struct PairHashing {
 class CollisionSystem : public ISystem {
 public:
 
-	void InitBlockGridMap();
+	void BuildBlockGridMap();
 	void RegisterCollisionHandlers();
 	std::array<Entity, 4> GetNearbyBlocks(const Transform&);
 	bool HasCollision(const ColliderBody&, const ColliderBody&, CollisionDetails* = nullptr);

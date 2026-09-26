@@ -11,13 +11,15 @@ public:
 
 //Disable copying, only allow moving
 	Registry(const Registry&) = delete;
-	Registry(Registry&&) noexcept;
+	Registry(Registry&&) noexcept = default;
 
 	void ResetManagers();
 
 // *** Entity functions ***//
 	Entity CreateEntity();
 	void DestroyEntity(Entity);
+	void ReapDestroyed();
+	bool IsEntityLive(Entity) const;
 
 // *** Component functions ***//
 	template<typename T>
@@ -96,4 +98,7 @@ private:
 	Scope<ComponentManager> m_CompManager;
 	Scope<SystemManager> m_SysManager;
 	Scope<EventQueue> m_EventQ;
+
+	//Killed this frame, not yet structurally removed
+	std::vector<Entity> m_PendingReap;
 };

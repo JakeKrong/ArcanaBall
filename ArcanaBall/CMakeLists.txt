@@ -16,6 +16,7 @@ SET (GAME_SOURCES
  "src/Components/Component.h" "src/Components/Transform.h" "src/Components/Renderable.h"
  "src/Components/Button.h" "src/Components/Physics.h" "src/Components/StatusEffect.h" 
  "src/Components/Collider.h" "src/Components/Block.h" "src/Components/Child.h" "src/Components/AnimationData.h"
+ "src/Components/Lifetime.h"
  
  "src/Services/InputManager.h" "src/Services/InputManager.cpp"
  "src/Services/TextureManager.h" "src/Services/TextureManager.cpp"
@@ -29,6 +30,7 @@ SET (GAME_SOURCES
  "src/System/PhysicsSystem.h" "src/System/PhysicsSystem.cpp"
  "src/System/HierarchySystem.h" "src/System/HierarchySystem.cpp"
  "src/System/AnimationSystem.h" "src/System/AnimationSystem.cpp"
+ "src/System/LifetimeSystem.h" "src/System/LifetimeSystem.cpp"
  "src/System/BlockSystem.h" "src/System/BlockSystem.cpp" 
 
  "src/State/IState.h"
@@ -56,12 +58,25 @@ SET (INCLUDE_DIRS
 
 target_include_directories(ArcanaBall PRIVATE ${INCLUDE_DIRS})
 
-target_link_libraries(ArcanaBall PRIVATE 
+target_link_libraries(ArcanaBall PRIVATE
 	SFML::Graphics
 	SFML::Window
 	SFML::System
 	SFML::Audio
 )
+
+get_property(IS_MULTI_CONFIG GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
+if (IS_MULTI_CONFIG)
+	set(ASSET_STAGE_DIR "${CMAKE_CURRENT_BINARY_DIR}/$<CONFIG>/assets")
+else()
+	set(ASSET_STAGE_DIR "${CMAKE_CURRENT_BINARY_DIR}/assets")
+endif()
+
+add_custom_target(ArcanaBall_assets
+	COMMAND ${CMAKE_COMMAND} -E copy_directory "${CMAKE_CURRENT_SOURCE_DIR}/assets" "${ASSET_STAGE_DIR}"
+	COMMENT "Staging assets"
+)
+add_dependencies(ArcanaBall ArcanaBall_assets)
 
 # --- Unit tests (Catch2) ---
 # Requires Catch2 FetchContent from top-level CMake; link Catch2::Catch2WithMain

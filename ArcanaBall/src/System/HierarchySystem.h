@@ -4,4 +4,6 @@
 class HierarchySystem : public ISystem {
 public:
 	void Update();
+	void ProcessDestroyRequests();
+
 };

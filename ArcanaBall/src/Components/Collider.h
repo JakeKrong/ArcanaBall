@@ -1,4 +1,6 @@
 #pragma once
+#include <cstdint>
+
 enum class ColliderType : uint8_t {
 	Block,
 	Ball,
@@ -14,7 +16,6 @@ enum class ColliderShape : uint8_t {
 };
 
 struct Collider {
-
-	ColliderType colType;
-	ColliderShape colShape;
+	ColliderType colType{ ColliderType::Block };		//Default value
+	ColliderShape colShape{ ColliderShape::Rectangle };	//Default value
 };

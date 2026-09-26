@@ -15,16 +15,13 @@ public:
 	}
 
 	template<typename T>
-	void PublishDeferred(const T& event) {
-		m_DeferredEventsMap[typeid(T)].push_back(std::make_unique<T>(event));
-	}
-
-	template<typename T>
 	std::vector<T*> GetTEvents() {
 		std::vector<T*> events;
 		auto it = m_EventsMap.find(typeid(T));
 
 		if (it != m_EventsMap.end()) {
+			events.reserve(it->second.size()); // Reserve to reduce re-allocation
+
 			for (auto& eventPtr : it->second) {
 				events.push_back(static_cast<T*>(eventPtr.get()));
 			}
@@ -32,14 +29,27 @@ public:
 		return events;
 	}
 
-	inline void ClearEvents() { 
-		m_EventsMap.clear(); 
-		m_EventsMap = std::move(m_DeferredEventsMap);
-		m_DeferredEventsMap.clear();
+	//Like GetTEvents, but also removes them from the queue. For consumers that run more than once per frame
+	template<typename T>
+	std::vector<T> ConsumeTEvents() {
+		std::vector<T> events;
+		auto it = m_EventsMap.find(typeid(T));
+
+		if (it != m_EventsMap.end()) {
+			events.reserve(it->second.size());
+
+			for (auto& eventPtr : it->second) {
+				events.push_back(*static_cast<T*>(eventPtr.get()));
+			}
+			it->second.clear();
+		}
+		return events;
+	}
+
+	inline void ClearEvents() {
+		m_EventsMap.clear();
 	}
 
 private:
 	std::unordered_map<std::type_index, std::vector<std::unique_ptr<BaseEvent>>> m_EventsMap;
-
-	std::unordered_map<std::type_index, std::vector<std::unique_ptr<BaseEvent>>> m_DeferredEventsMap;
 };

@@ -4,6 +4,7 @@
 #include <typeindex>
 
 #include <assert.h>
+#include <stdexcept>
 
 #include "Types.h"
 #include "Component.h"
@@ -24,6 +25,14 @@ public:
 
 	template<typename... Args>
 	void AddTComponent(Entity ent, Args&&...args) {
+		assert(!m_EntityToComponentMap.contains(ent) && "Adding a component that is already held by entity!");
+
+		auto existing = m_EntityToComponentMap.find(ent);
+		if (existing != m_EntityToComponentMap.end()) {
+			m_ComponentArray[existing->second] = { std::forward<Args>(args)... };
+			return;
+		}
+
 		m_ComponentArray[m_Index] = { std::forward<Args>(args)... };
 
 		m_EntityToComponentMap[ent] = m_Index;
@@ -33,8 +42,12 @@ public:
 	}
 
 	void RemoveTComponent(Entity ent) {
-		
-		ComponentID removedIndex = m_EntityToComponentMap[ent];
+		assert(m_EntityToComponentMap.contains(ent) && "Removing a component unassigned to an entity!");
+
+		auto removed = m_EntityToComponentMap.find(ent);
+		if (removed == m_EntityToComponentMap.end()) return;
+
+		ComponentID removedIndex = removed->second;
 		ComponentID lastIndex = m_Index - 1;
 
 		if (removedIndex != lastIndex) {
@@ -58,8 +71,12 @@ public:
 	}
 
 	T& GetTComponent(Entity ent) {
-		assert(m_EntityToComponentMap.contains(ent) && "Trying to get a component unassigned to an entity");
-		return m_ComponentArray[m_EntityToComponentMap[ent]];
+		auto it = m_EntityToComponentMap.find(ent);
+		assert(it != m_EntityToComponentMap.end() && "Trying to get a component unassigned to an entity");
+
+		if (it == m_EntityToComponentMap.end()) throw std::out_of_range("GetTComponent: entity holds no component of this type!");
+
+		return m_ComponentArray[it->second];
 	}
 
 	std::vector<std::pair<Entity, T&>> GetAllTEntityComponent(){ //For testing only
@@ -87,6 +104,7 @@ public:
 		std::type_index typeInd = typeid(T);
 
 		assert(m_ComponentTypeIds.find(typeInd) == m_ComponentTypeIds.end() && "Component Type already registered!");
+		assert(m_CurrComponentId < COMPONENT_CAP && "Entity has surpassed allowed component cap!");
 
 		m_ComponentTypeIds.insert({ typeInd, m_CurrComponentId });
 		m_ComponentTypeArraysMap.insert({ typeInd, CreateScope<ComponentArray<T>>() });
@@ -96,17 +114,22 @@ public:
 
 	template<typename T>
 	ComponentID GetComponentID() {
-		std::type_index componentInd = typeid(T);
-		assert(m_ComponentTypeIds.find(componentInd) != m_ComponentTypeIds.end() && "Component Type is not registered!");
+		auto it = m_ComponentTypeIds.find(typeid(T));
+		assert(it != m_ComponentTypeIds.end() && "Component Type is not registered!");
 
-		return m_ComponentTypeIds[componentInd];
+		if (it == m_ComponentTypeIds.end()) throw std::out_of_range("GetComponentID: component type is not registered!");
+
+		return it->second;
 	}
 
 	template<typename T>
 	ComponentArray<T>& GetComponentArray() {
-		std::type_index componentInd = typeid(T);
-		assert(m_ComponentTypeArraysMap.find(componentInd) != m_ComponentTypeArraysMap.end() && "Trying to Get a Non-Registered Component's Array!");
-		return *static_cast<ComponentArray<T>*>(m_ComponentTypeArraysMap[componentInd].get());
+		auto it = m_ComponentTypeArraysMap.find(typeid(T));
+		assert(it != m_ComponentTypeArraysMap.end() && "Trying to Get a Non-Registered Component's Array!");
+
+		if (it == m_ComponentTypeArraysMap.end()) throw std::out_of_range("GetComponentArray: component type is not registered!");
+
+		return *static_cast<ComponentArray<T>*>(it->second.get());
 	}
 
 	template<typename T, typename... Args>
@@ -119,25 +142,22 @@ public:
 
 	template<typename T>
 	void RemoveComponent(Entity ent) {
-		std::type_index componentInd = typeid(T);
 		GetComponentArray<T>().RemoveTComponent(ent);
 	}
 
 	template<typename T>
 	T& GetComponent(Entity ent) {
-		std::type_index componentInd = typeid(T);
 		return GetComponentArray<T>().GetTComponent(ent);
 	}
 
 	template<typename T>
 	bool SigHasComponent(Signature sig) {
-		std::type_index typeInd = typeid(T);
-		return (sig[m_ComponentTypeIds[typeInd]]);
+		return sig[GetComponentID<T>()];
 	}
 
 	void DestroyEntComponents(Entity ent, Signature entSig) {
 		for (auto& [typeInd, compId] : m_ComponentTypeIds) {
-			if (entSig[compId]) m_ComponentTypeArraysMap[typeInd]->EntityDestroyed(ent);
+			if (entSig[compId]) m_ComponentTypeArraysMap.at(typeInd)->EntityDestroyed(ent);
 		}
 	}
 

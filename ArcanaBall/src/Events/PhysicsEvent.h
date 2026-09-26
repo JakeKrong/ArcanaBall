@@ -2,6 +2,8 @@
 #include "BaseEvent.h"
 #include <SFML/System/Vector2.hpp>
 
+#include "Types.h"
+
 struct PhysicsEvent : BaseEvent {
 	Entity ent = 0;
 	sf::Vector2f vectorChange{ 0,0 };
