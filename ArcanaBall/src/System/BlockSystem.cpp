@@ -15,7 +15,7 @@ void BlockSystem::Update() {
 	auto& statusEffCompArr = m_Registry->GetComponentArray<StatusEffect>();
 
 	//Consume block collision events
-	for (auto& event : m_Registry->GetEventQueue().GetTEvents<BlockCollisionEvent>()) {
+	for (auto event : m_Registry->GetEventQueue().GetTEvents<BlockCollisionEvent>()) {
 		const Entity blockEntity = event->blockEntity;
 		auto& blockComp = blockCompArr.GetTComponent(blockEntity);
 		auto& statusEffComp = statusEffCompArr.GetTComponent(blockEntity);
@@ -72,26 +72,33 @@ void BlockSystem::Update() {
 		}
 	}
 
-	auto entities = m_Entities;
-	for (Entity ent : entities) {
+	for (Entity ent : m_Entities) {
+		if (!m_Registry->IsEntityLive(ent)) continue; //Awaiting reap
+
 		auto& blockComp = blockCompArr.GetTComponent(ent);
 		if (blockComp.durability <= 0) {
 			sf::Vector2f blockPos = m_Registry->GetEntityComponent<Transform>(ent).position;
 			EventQueue& eventQ = m_Registry->GetEventQueue();
 
-			eventQ.PublishDeferred<BlockDestroyed>(blockPos); //Event to notify CollisionSystem for update on BlockGridMap
+			const BlockType blockType = blockComp.blockType;
 
 			//Publish spawning block break effect event
-			eventQ.Publish<SpawnEffectsEvent>({ blockComp.blockType, blockPos });
+			eventQ.Publish<SpawnEffectsEvent>({ blockType, blockPos });
 
 			m_Registry->DestroyEntity(ent);
-			eventQ.Publish<DestroyChildEntity>(ent); //Destroy any status effect animations
 
-			QueueBlockAudio(blockComp.blockType, true);
+			QueueBlockAudio(blockType, true);
 		}
 	}
 
-	if (!m_Entities.size()) { m_Registry->GetEventQueue().Publish<GameStateEvent>({ GameStateEvent::Type::GameOver, 1 }); }
+	//Count current live blocks (excluding those to be reaped), if 0 then queue game over
+	const bool anyBlocksLeft = std::ranges::any_of(m_Entities,
+		[this](Entity ent) { return m_Registry->IsEntityLive(ent); });
+
+	if (!anyBlocksLeft && !m_AllBlocksCleared) {
+		m_AllBlocksCleared = true;
+		m_Registry->GetEventQueue().Publish<GameStateEvent>({ GameStateEvent::Type::GameOver, 1 });
+	}
 }
 
 void BlockSystem::TriggerReaction(ElemInfusion elem1, ElemInfusion elem2, sf::Vector2f blockPos) {
@@ -117,7 +124,7 @@ void BlockSystem::QueueBlockAudio(BlockType type, bool isDestroyed) {
 	AudioAsset hitAudio{};
 
 	switch (type) {
-	case(BlockType::Stone): 
+	case(BlockType::Stone):
 		hitAudio = AudioAsset::FX_StoneBreak;
 		break;
 	case(BlockType::Brick):

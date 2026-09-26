@@ -10,6 +10,7 @@ public:
 	void Update(float);
 	void Render(sf::RenderWindow&);
 	void ChangeState(Scope<IState>);
+	void ExitCurrentState();
 	void EnqueueChangeState(Scope<IState>);
 
 private:

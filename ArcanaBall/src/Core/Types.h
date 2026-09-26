@@ -4,20 +4,26 @@
 #include <memory>
 #include <array>
 
-#define BuildForPlayable 0
+#include <SFML/System/Vector2.hpp>
 
 // *** Game Configurations *** //
-#define TargetFixedUpdateFreq 144
-#define DefaultVolumeSetting 20
-#define DefaultResolution {1280, 720}
+constexpr unsigned int TargetFixedUpdateFreq = 144;
+constexpr float FixedUpdateStep = 1.f / TargetFixedUpdateFreq;
+constexpr sf::Vector2u DefaultResolution{ 1280, 720 };
+
+// Tracker for volume slider, referenced by the prefab that lays the slider out and the system that drags it
+constexpr float VolumeSliderMinX = 1035.f;
+constexpr float VolumeSliderMaxX = 1185.f;
+constexpr float DefaultVolumeSetting = 20.f;
+constexpr float MaxVolumeSetting = DefaultVolumeSetting * 2.f; //Slider midpoint sits at the default
 
 
 // *** ECS Functionality *** //
 using Entity = std::uint16_t;
 using ComponentID = std::uint16_t;
 
-const Entity ENTITY_CAP = 750;			//Expected upper limit for entity count
-const ComponentID COMPONENT_CAP = 16;	//Cap for component types
+constexpr Entity ENTITY_CAP = 1000;			//Expected upper limit for entity count
+constexpr ComponentID COMPONENT_CAP = 16;	//Cap for component types
 
 using Signature = std::bitset<COMPONENT_CAP>;
 

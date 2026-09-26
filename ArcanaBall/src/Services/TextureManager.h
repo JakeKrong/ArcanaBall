@@ -9,9 +9,5 @@ public:
 private:
 	std::unordered_map<std::string, sf::Texture> m_TextureMap;
 
-#if BuildForPlayable
 	std::string m_TextureBasePath = "assets/textures/";
-#else
-	std::string m_TextureBasePath = "../../../../ArcanaBall/assets/textures/";
-#endif
 };

@@ -6,3 +6,4 @@
 #include "BlockSystem.h"
 #include "HierarchySystem.h"
 #include "AnimationSystem.h"
+#include "LifetimeSystem.h"

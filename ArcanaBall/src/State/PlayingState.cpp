@@ -1,4 +1,7 @@
 #include "PlayingState.h"
+
+#include <algorithm>
+
 #include "Game.h"
 #include "Prefabs.h"
 
@@ -18,6 +21,7 @@ PlayingState::PlayingState(Game* game, int levelNumber, StageGridData& stageData
 	m_BlockSystem(game->GetRegistry().RegisterSystem<BlockSystem>()),
 	m_HierarchySystem(game->GetRegistry().RegisterSystem<HierarchySystem>()),
 	m_AnimationSystem(game->GetRegistry().RegisterSystem<AnimationSystem>()),
+	m_LifetimeSystem(game->GetRegistry().RegisterSystem<LifetimeSystem>()),
 	m_LevelData( {stageData, levelNumber  })
 {
 	m_OverlayEnt.reserve(10);
@@ -38,6 +42,7 @@ void PlayingState::Enter() {
 	registry.RegisterComponent<StatusEffect>();
 	registry.RegisterComponent<Child>();
 	registry.RegisterComponent<AnimationData>();
+	registry.RegisterComponent<Lifetime>();
 
 	// *** Systems ****//
 	//Set Registry
@@ -48,6 +53,7 @@ void PlayingState::Enter() {
 	m_BlockSystem.SetRegistry(&m_Game->GetRegistry());
 	m_HierarchySystem.SetRegistry(&m_Game->GetRegistry());
 	m_AnimationSystem.SetRegistry(&m_Game->GetRegistry());
+	m_LifetimeSystem.SetRegistry(&m_Game->GetRegistry());
 
 
 	//Set Signature
@@ -86,6 +92,10 @@ void PlayingState::Enter() {
 	animSig.set(registry.GetComponentID<AnimationData>());
 	registry.SetSystemSignature<AnimationSystem>(animSig);
 
+	Signature lifetimeSig;
+	lifetimeSig.set(registry.GetComponentID<Lifetime>());
+	registry.SetSystemSignature<LifetimeSystem>(lifetimeSig);
+
 	//Set up level
 	GenerateLevelBlocks();
 	Prefab::GameObject::LevelBorders(registry, m_Game->GetTextureManager());
@@ -114,7 +124,7 @@ void PlayingState::Enter() {
 	AttachBallToPaddle();
 
 	m_CollisionSystem.RegisterCollisionHandlers();
-	m_CollisionSystem.InitBlockGridMap();
+	m_CollisionSystem.BuildBlockGridMap();
 	m_Game->SetMouseVisibility(false);
 }
 
@@ -128,7 +138,7 @@ void PlayingState::Update(float deltaTime) {
 
 	if (m_LevelData.gameOverEnqueued) {
 		if (m_LevelData.gameOverTimer > 0) {
-			m_LevelData.gameOverTimer -= deltaTime;
+			m_LevelData.gameOverTimer = std::max(0.f, m_LevelData.gameOverTimer - deltaTime);
 			deltaTime *= (m_LevelData.gameOverTimer / 5.f);
 		}
 		else if (!m_LevelData.gameWon && m_LevelData.livesLeft > 0) {
@@ -163,14 +173,21 @@ void PlayingState::Update(float deltaTime) {
 		UpdatePaddle(playerInput);
 		if (playerInput.mouseClicked && m_LevelData.ballAttached) LaunchBall();
 
-		m_CollisionSystem.Update();
-		m_PhysicsSystem.Update(deltaTime);
+		m_StepAccumulator += deltaTime;
+		while (m_StepAccumulator >= FixedUpdateStep) {
+			m_StepAccumulator -= FixedUpdateStep;
+
+			m_CollisionSystem.Update();
+			m_LifetimeSystem.Update();
+			m_PhysicsSystem.Step(FixedUpdateStep);
+		}
+
 		m_BlockSystem.Update();
-		m_HierarchySystem.Update();
 		ManageEntities();
+		m_HierarchySystem.Update();
 		m_AnimationSystem.Update(deltaTime);
 
-		for (auto& event : registry.GetEventQueue().GetTEvents<GameStateEvent>()) {
+		for (auto event : registry.GetEventQueue().GetTEvents<GameStateEvent>()) {
 			if (event->type == GameStateEvent::Type::GameOver && !m_LevelData.gameOverEnqueued) {
 				m_LevelData.gameOverEnqueued = true;
 				m_LevelData.gameOverTimer = 2.f;
@@ -233,7 +250,7 @@ void PlayingState::PauseGame() {
 	Registry& registry = m_Game->GetRegistry();
 
 	Entity darkOverlay = registry.CreateEntity();
-	registry.AddComponentToEntity<Transform>(darkOverlay, Transform{ {0,0}, DefaultResolution });
+	registry.AddComponentToEntity<Transform>(darkOverlay, Transform{ {0,0}, sf::Vector2f(DefaultResolution) });
 	registry.AddComponentToEntity<Renderable>(darkOverlay, &m_Game->GetTextureManager().Load("Overlay"), RenderLayer::UI);
 	m_OverlayEnt.push_back(darkOverlay);
 
@@ -281,7 +298,7 @@ void PlayingState::GameLost() {
 	Registry& registry = m_Game->GetRegistry();
 
 	Entity darkOverlay = registry.CreateEntity();
-	registry.AddComponentToEntity<Transform>(darkOverlay, Transform{ {0,0}, DefaultResolution });
+	registry.AddComponentToEntity<Transform>(darkOverlay, Transform{ {0,0}, sf::Vector2f(DefaultResolution) });
 	registry.AddComponentToEntity<Renderable>(darkOverlay, &m_Game->GetTextureManager().Load("Overlay"), RenderLayer::UI2);
 
 	Entity gameOverTitle = registry.CreateEntity();
@@ -305,7 +322,7 @@ void PlayingState::GameWon() {
 	Registry& registry = m_Game->GetRegistry();
 
 	Entity darkOverlay = registry.CreateEntity();
-	registry.AddComponentToEntity<Transform>(darkOverlay, Transform{ {0,0}, DefaultResolution });
+	registry.AddComponentToEntity<Transform>(darkOverlay, Transform{ {0,0}, sf::Vector2f(DefaultResolution) });
 	registry.AddComponentToEntity<Renderable>(darkOverlay, &m_Game->GetTextureManager().Load("Overlay"), RenderLayer::UI2);
 
 	Entity stageClearedTitle = registry.CreateEntity();
@@ -396,7 +413,11 @@ void PlayingState::AttachBallToPaddle() {
 	Registry& registry = m_Game->GetRegistry();
 	Transform& paddleTrans = registry.GetEntityComponent<Transform>(m_StageEnts.paddleEnt);
 	Transform& ballTrans = registry.GetEntityComponent<Transform>(m_StageEnts.ballEnt);
-	
+
+	if (registry.EntityHasComponent<Physics>(m_StageEnts.ballEnt)) {
+		registry.RemoveComponentFromEntity<Physics>(m_StageEnts.ballEnt);
+	}
+
 	registry.AddComponentToEntity<Child>(m_StageEnts.ballEnt, m_StageEnts.paddleEnt,
 		sf::Vector2f{ (paddleTrans.size.x / 2) - (ballTrans.size.x / 2), -25 });
 
@@ -421,7 +442,7 @@ void PlayingState::LaunchBall() {
 	m_LevelData.ballAttached = false;
 	
 	registry.RemoveComponentFromEntity<Child>(m_StageEnts.ballEnt);
-	float ballSpeed = 800.f;
+	float ballSpeed = 750.f;
 
 	Transform& ballTrans = registry.GetEntityComponent<Transform>(m_StageEnts.ballEnt);
 	//Launch ball very slightly left or right-wards to prevent continuous straight bouncing
@@ -434,12 +455,38 @@ void PlayingState::LaunchBall() {
 void PlayingState::ManageEntities() {
 	Registry& registry = m_Game->GetRegistry();
 
+	for (auto event : registry.GetEventQueue().GetTEvents<StageEvent>()) {
+		switch (event->eventType) {
+		case(StageEvent::EventType::BallPaddleCollision):
+		{
+			StatusEffect& ballEff = registry.GetEntityComponent<StatusEffect>(m_StageEnts.ballEnt);
+			StatusEffect& paddleEff = registry.GetEntityComponent<StatusEffect>(m_StageEnts.paddleEnt);
+			if (ballEff.element != paddleEff.element) {
+				if (ballEff.element != ElemInfusion::None) registry.GetEventQueue().Publish<DestroyChildEntity>(m_StageEnts.ballEnt);
+
+				ballEff.element = paddleEff.element;
+				if (ballEff.element != ElemInfusion::None)
+					registry.GetEventQueue().Publish<SpawnEffectsEvent>({ ballEff.element, registry.GetEntityComponent<Transform>(m_StageEnts.ballEnt).position, m_StageEnts.ballEnt });
+			}
+			break;
+		}
+		case(StageEvent::EventType::ReactionTriggered):
+			break;
+		}
+	}
+
+	m_HierarchySystem.ProcessDestroyRequests(); //Ran before spawning, otherwise it also destroys the replacement overlays
+
 	//Process Spawn Entity Events
 	for (auto event : registry.GetEventQueue().GetTEvents<SpawnEffectsEvent>()) {
 		if (auto block = std::get_if<BlockType>(&event->type)) {
 			Prefab::GameObject::BlockBreakEff(registry, m_Game->GetTextureManager(), event->payload, *block);
 		}
 		else if (auto infusion = std::get_if<ElemInfusion>(&event->type)) {
+			//Skip if the parent's element changed since the request (e.g. block infused, then cleared by a reaction)
+			if (!registry.IsEntityLive(event->parentEntity) ||
+				registry.GetEntityComponent<StatusEffect>(event->parentEntity).element != *infusion) continue;
+
 			if (event->parentEntity == m_StageEnts.ballEnt)
 				Prefab::GameObject::BallElementEff(registry, m_Game->GetTextureManager(), event->parentEntity, event->payload, *infusion);
 			else
@@ -467,27 +514,6 @@ void PlayingState::ManageEntities() {
 	for (auto event : registry.GetEventQueue().GetTEvents<ChangeTextureEvent>()) {
 		if (registry.EntityHasComponent<Renderable>(event->entity)) {
 			registry.GetEntityComponent<Renderable>(event->entity).texture = &m_Game->GetTextureManager().Load(event->newTextureName);
-		}
-	}
-
-	//Process Stage Events
-	for (auto event : registry.GetEventQueue().GetTEvents<StageEvent>()) {
-		switch (event->eventType) {
-		case(StageEvent::EventType::BallPaddleCollision):
-		{
-			StatusEffect& ballEff = registry.GetEntityComponent<StatusEffect>(m_StageEnts.ballEnt);
-			StatusEffect& paddleEff = registry.GetEntityComponent<StatusEffect>(m_StageEnts.paddleEnt);
-			if (ballEff.element != paddleEff.element) {
-				if (ballEff.element != ElemInfusion::None) registry.GetEventQueue().PublishDeferred<DestroyChildEntity>(m_StageEnts.ballEnt);
-
-				ballEff.element = paddleEff.element;
-				if (ballEff.element != ElemInfusion::None)
-					registry.GetEventQueue().PublishDeferred<SpawnEffectsEvent>({ ballEff.element, registry.GetEntityComponent<Transform>(m_StageEnts.ballEnt).position, m_StageEnts.ballEnt });
-			}
-			break;
-		}
-		case(StageEvent::EventType::ReactionTriggered):
-			break;
 		}
 	}
 }

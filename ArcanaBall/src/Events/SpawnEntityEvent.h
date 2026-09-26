@@ -5,13 +5,6 @@
 
 #include <variant>
 
-struct SpawnEntityEvent : BaseEvent {
-	enum class Type { Enemy, BloodEffect, Etc };
-	Type type;
-
-	std::variant<int, float> payload; //Insert data for each class type
-};
-
 struct SpawnEffectsEvent : BaseEvent {
 	using EffectType = std::variant<BlockType, ElemInfusion, ActiveReaction>;
 

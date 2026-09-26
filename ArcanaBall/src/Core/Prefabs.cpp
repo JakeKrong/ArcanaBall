@@ -13,7 +13,7 @@ std::array<Entity, 3> Prefab::UI::VolumeControl(Registry& reg, TextureManager& t
 	reg.AddComponentToEntity<Renderable>(volumeSlider, &textMn.Load("UI/Slider"), RenderLayer::UI);
 
 	Entity sliderButton = reg.CreateEntity();
-	float currSliderX = 1035.f + (currVolume / DefaultVolumeSetting * 75.f);
+	float currSliderX = VolumeSliderMinX + (currVolume / MaxVolumeSetting) * (VolumeSliderMaxX - VolumeSliderMinX);
 	reg.AddComponentToEntity<Transform>(sliderButton, sf::Vector2f{ currSliderX,35 }, sf::Vector2f{ 15,22 });
 	reg.AddComponentToEntity<Renderable>(sliderButton, &textMn.Load("UI/Slider_Butt"), RenderLayer::UI2);
 	reg.AddComponentToEntity<Button>(sliderButton, ButtonAction::AdjustVolume);
@@ -77,7 +77,6 @@ Entity Prefab::GameObject::Ball(Registry& reg, TextureManager& textMn) {
 	reg.AddComponentToEntity<Renderable>(ball, &textMn.Load("GameObject/Ball"), RenderLayer::GameObjects);
 	reg.AddComponentToEntity<Collider>(ball, ColliderType::Ball, ColliderShape::Circle);
 	reg.AddComponentToEntity<StatusEffect>(ball, ElemInfusion::None);
-	reg.AddComponentToEntity<Child>(ball, Entity{ 0 });
 
 	return ball;
 }
@@ -178,8 +177,8 @@ Entity Prefab::GameObject::BlockBreakEff(Registry& reg, TextureManager& textMn, 
 }
 
 void Prefab::GameObject::BlockElementEff(Registry& reg, TextureManager& textMn, Entity parentEnt, sf::Vector2f blockPos, ElemInfusion elem) {
-	//Check if parent entity still valid
-	if (!reg.EntityHasComponent<Transform>(parentEnt)) return;
+	//Check if parent entity still "live"
+	if (!reg.IsEntityLive(parentEnt)) return;
 
 	Entity blockEff = reg.CreateEntity();
 	reg.AddComponentToEntity<Transform>(blockEff, blockPos, sf::Vector2f{ BLOCK_WIDTH, BLOCK_HEIGHT });
@@ -242,10 +241,7 @@ void Prefab::Reaction::IceShatter(Registry& reg, TextureManager& textMn, sf::Vec
 	reg.AddComponentToEntity<Transform>(shatterCollider, transform);
 	reg.AddComponentToEntity<Collider>(shatterCollider, ColliderType::Effects, ColliderShape::Rectangle);
 	reg.AddComponentToEntity<StatusEffect>(shatterCollider, ElemInfusion::Ice, ActiveReaction::IceShatter);
-
-	//Assign the collider as child as the visual effect, and use deferred destroy child entity to get rid of collider after next frame
-	reg.AddComponentToEntity<Child>(shatterCollider, shatterEffect);
-	reg.GetEventQueue().PublishDeferred<DestroyChildEntity>(shatterEffect);
+	reg.AddComponentToEntity<Lifetime>(shatterCollider, 1); //Lasts exactly 1 frame for collision check pass, destroy right after
 }
 
 void Prefab::Reaction::Overload(Registry& reg, TextureManager& textMn, sf::Vector2f blockPos) {
@@ -289,9 +285,7 @@ void Prefab::Reaction::Overload(Registry& reg, TextureManager& textMn, sf::Vecto
 		reg.AddComponentToEntity<Transform>(overloadCollider, transform);
 		reg.AddComponentToEntity<Collider>(overloadCollider, ColliderType::Effects, ColliderShape::Rectangle);
 		reg.AddComponentToEntity<StatusEffect>(overloadCollider, ElemInfusion::Fire, ActiveReaction::Overload);
-		//Assign the collider as child as the visual effect, and use deferred destroy child entity to get rid of collider after next frame
-		reg.AddComponentToEntity<Child>(overloadCollider, overloadEffect);
-		reg.GetEventQueue().PublishDeferred<DestroyChildEntity>(overloadEffect);
+		reg.AddComponentToEntity<Lifetime>(overloadCollider, 1);
 
 		Entity extraEff = reg.CreateEntity();
 		reg.AddComponentToEntity<Transform>(extraEff, blockPos, sf::Vector2f{BLOCK_WIDTH, BLOCK_HEIGHT});
@@ -343,8 +337,6 @@ void Prefab::Reaction::LightningCross(Registry& reg, TextureManager& textMn, sf:
 		reg.AddComponentToEntity<Transform>(lightningCollider, transform);
 		reg.AddComponentToEntity<Collider>(lightningCollider, ColliderType::Effects, ColliderShape::Rectangle);
 		reg.AddComponentToEntity<StatusEffect>(lightningCollider, ElemInfusion::Lightning, ActiveReaction::LightningCross);
-		//Assign the collider as child as the visual effect, and use deferred destroy child entity to get rid of collider after next frame
-		reg.AddComponentToEntity<Child>(lightningCollider, lightningEffect);
-		reg.GetEventQueue().PublishDeferred<DestroyChildEntity>(lightningEffect);
+		reg.AddComponentToEntity<Lifetime>(lightningCollider, 1);
 	}
 }

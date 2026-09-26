@@ -3,9 +3,7 @@
 #include "Registry.h"
 #include "PhysicsEvent.h"
 
-#define FixedUpdateStep static_cast<float>(1.0/TargetFixedUpdateFreq)
-
-void PhysicsSystem::Update(float deltaTime) {
+void PhysicsSystem::Step(float stepTime) {
 	if (!m_Registry || m_Entities.size() == 0) {
 		return;
 	}
@@ -14,24 +12,22 @@ void PhysicsSystem::Update(float deltaTime) {
 	auto& physicsCompArr = registry.GetComponentArray<Physics>();
 	auto& transformCompArr = registry.GetComponentArray<Transform>();
 	
-	for (const auto& event : registry.GetEventQueue().GetTEvents<PhysicsEvent>()) {
-		Physics& physComp = physicsCompArr.GetTComponent(event->ent);
-		physComp.velocity += event->vectorChange;
-		if (event->inverseX) physComp.velocity.x *= -1;
-		if (event->inverseY) physComp.velocity.y *= -1;
-		if (event->setAngle != -1) physComp.velocity = sf::Vector2f{ physComp.velocity.length(), sf::Angle(sf::degrees(event->setAngle)) };
+	for (const PhysicsEvent& event : registry.GetEventQueue().ConsumeTEvents<PhysicsEvent>()) {
+		if (!registry.EntityHasComponent<Physics>(event.ent)) continue;
+
+		Physics& physComp = physicsCompArr.GetTComponent(event.ent);
+		physComp.velocity += event.vectorChange;
+		if (event.inverseX) physComp.velocity.x *= -1;
+		if (event.inverseY) physComp.velocity.y *= -1;
+		if (event.setAngle != -1) physComp.velocity = sf::Vector2f{ physComp.velocity.length(), sf::Angle(sf::degrees(event.setAngle)) };
 	}
 
-	timeSinceFixedUpdate += deltaTime;
+	for (Entity ent : m_Entities) {
+		if (!m_Registry->IsEntityLive(ent)) continue;
 
-	if (timeSinceFixedUpdate >= FixedUpdateStep) {
-		timeSinceFixedUpdate -= FixedUpdateStep;
+		Transform& transComp = transformCompArr.GetTComponent(ent);
+		Physics& physComp = physicsCompArr.GetTComponent(ent);
 
-		for (Entity ent : m_Entities) {
-			Transform& transComp = transformCompArr.GetTComponent(ent);
-			Physics& physComp = physicsCompArr.GetTComponent(ent);
-
-			transComp.position += physComp.velocity * deltaTime;
-		}
+		transComp.position += physComp.velocity * stepTime;
 	}
 }

@@ -3,8 +3,5 @@
 
 class PhysicsSystem : public ISystem {
 public:
-	void Update(float);
-
-private:
-	float timeSinceFixedUpdate = 0;
+	void Step(float stepTime);
 };

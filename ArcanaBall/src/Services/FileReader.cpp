@@ -3,11 +3,7 @@
 #include <sstream>
 #include <print>
 
-#if BuildForPlayable
 static std::string m_GameDataBasePath = "assets/";
-#else
-static std::string m_GameDataBasePath = "../../../../ArcanaBall/assets/";
-#endif
 
 bool FileReader::ReadLevelData(std::unordered_map<int, StageGridData>& m_LevelData) {
 
@@ -22,19 +18,40 @@ bool FileReader::ReadLevelData(std::unordered_map<int, StageGridData>& m_LevelDa
     int currentRow = 0;
     StageGridData tempGrid{};
 
+    // Commit the buffered grid, but only if the level supplied every row
+    auto commitLevel = [&]() {
+        if (currentLevel == -1) return;
+
+        if (currentRow == BLOCK_ROWS) m_LevelData[currentLevel] = tempGrid;
+        else std::println("[Level Reader] Warning: Level {} has {} rows, expected {}. Skipped.",
+            currentLevel, currentRow, BLOCK_ROWS);
+    };
+
     while (std::getline(file, line)) {
+        // Drop the CR of a CRLF file read on a platform that does not strip it
+        if (!line.empty() && line.back() == '\r') line.pop_back();
+
         // Skip empty lines or if is comment
         if (line.empty() || line[0] == '#') continue;
 
         // Detect new level boundary character ("[Level 1]")
         if (line[0] == '[' && line.back() == ']') {
             // Save the last level data (if valid)
-            if (currentLevel != -1 && currentRow == BLOCK_ROWS) {
-                m_LevelData[currentLevel] = tempGrid;
+            commitLevel();
+
+            // Extract level identifier number cleanly. Collecting the digits rather than
+            // slicing at a fixed offset keeps a malformed header from throwing.
+            std::string numStr;
+            for (char ch : line) {
+                if (ch >= '0' && ch <= '9') numStr += ch;
             }
 
-            // Extract level identifier number cleanly
-            std::string numStr = line.substr(7, line.size() - 8); // Strips "[Level " and "]"
+            if (numStr.empty() || numStr.size() > 9) {
+                std::println("[Level Reader] Warning: Skipping malformed level header: {}", line);
+                currentLevel = -1;
+                continue;
+            }
+
             currentLevel = std::stoi(numStr);
             currentRow = 0;
             tempGrid = StageGridData{}; // Reset buffer grid
@@ -58,8 +75,11 @@ bool FileReader::ReadLevelData(std::unordered_map<int, StageGridData>& m_LevelDa
     }
 
     // Flush out the absolute final layout tracking block from the loop tail
-    if (currentLevel != -1 && currentRow == BLOCK_ROWS) {
-        m_LevelData[currentLevel] = tempGrid;
+    commitLevel();
+
+    if (m_LevelData.empty()) {
+        std::println("[Level Reader] Error: LevelData.txt contained no usable levels!");
+        return false;
     }
 
     return true;

@@ -5,6 +5,7 @@
 #include "FileReader.h"
 
 #include <cassert>
+#include <vector>
 
 Game::Game() :
 	m_Window(sf::RenderWindow(sf::VideoMode(DefaultResolution), "Arcana Ball"))
@@ -37,28 +38,44 @@ void Game::Run() {
 
 		//Perform Game Update and Render
 		m_StateManager.Update(deltaTime);
+
+		m_Registry.ReapDestroyed();
+
 		m_StateManager.Render(m_Window);
 
 		m_AudioManager.UpdateChannels(m_Registry.GetEventQueue());
 
-		//Consume Game State Events
+		//Consume Game State Events. Snapshot them first: ResetManagers() below frees the EventQueue that GetTEvents 
+		// handed out pointers into (avoid use-after-free)
+		std::vector<GameStateEvent> stateEvents;
 		for (auto event : m_Registry.GetEventQueue().GetTEvents<GameStateEvent>()) {
-			auto stateEvent = event->type;
-			float eventPayload = static_cast<int>(event->payload);
-			switch(stateEvent) {
+			stateEvents.push_back(*event);
+		}
+
+		bool stateChanged = false;
+		for (const GameStateEvent& event : stateEvents) {
+			if (stateChanged) break; //Stop at the first transition
+
+			switch (event.type) {
 			case(GameStateEvent::Type::StartGame):
+				m_StateManager.ExitCurrentState();
 				m_Registry.ResetManagers();
-				m_StateManager.EnqueueChangeState(std::make_unique<PlayingState>(this, eventPayload, GetStageGridData(eventPayload)));
+				m_StateManager.EnqueueChangeState(std::make_unique<PlayingState>(this, event.payload, GetStageGridData(event.payload)));
+				stateChanged = true;
 				break;
 			case(GameStateEvent::Type::EndGame):
 				m_Window.close();
+				stateChanged = true;
 				break;
 			case(GameStateEvent::Type::ContinueGame):
 				m_InputManager.GetInputStates().resumeGame = true;
 				break;
 			case(GameStateEvent::Type::MainMenu):
+				m_StateManager.ExitCurrentState();
 				m_Registry.ResetManagers();
 				m_StateManager.EnqueueChangeState(std::make_unique<MainMenuState>(this));
+				stateChanged = true;
+				break;
 			}
 		}
 

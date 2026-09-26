@@ -8,30 +8,26 @@
 
 #include "PhysicsEvent.h"
 #include "BlockCollisionEvent.h"
-#include "EntityDestroyedEvent.h"
 #include "GameStateEvent.h"
 #include "StageEvent.h"
 #include "AudioEvent.h"
 
 
-void CollisionSystem::InitBlockGridMap() {
+void CollisionSystem::BuildBlockGridMap() {
+	m_BlockGrid = {};
 
-	if (m_Entities.size() == 0) return;
+	if (!m_Registry || m_Entities.empty()) return;
 
 	auto& transCompArr = m_Registry->GetComponentArray<Transform>();
 	auto& colCompArr = m_Registry->GetComponentArray<Collider>();
 
-	//Sort initial m_Entities based on Collider Type enum
-	std::ranges::sort(m_Entities, {}, [&colCompArr](Entity ent) {
-		return colCompArr.GetTComponent(ent).colType;
-		});
-
-	//Iterate sorted vector to update tracker
 	for (Entity ent : m_Entities) {
+		if (!m_Registry->IsEntityLive(ent)) continue;
+
 		if (colCompArr.GetTComponent(ent).colType != ColliderType::Block) {
-			break;
+			continue;
 		}
-		
+
 		const auto& trans = transCompArr.GetTComponent(ent);
 
 		auto posGridMapping = StageToGrid(trans.position);
@@ -246,20 +242,20 @@ void CollisionSystem::Update() {
 		return;
 	}
 
+	//Refresh the grid whenever a collider has left the system (In most cases would be blocks)
+	if (m_EntitiesRemoved) {
+		BuildBlockGridMap();
+		m_EntitiesRemoved = false;
+	}
+
 	auto& transCompArr = m_Registry->GetComponentArray<Transform>();
 	auto& colCompArr = m_Registry->GetComponentArray<Collider>();
 
-	//Update m_BlockGrid when BlockDestroyed event received
-	for (auto event : m_Registry->GetEventQueue().GetTEvents<BlockDestroyed>()) {
-		sf::Vector2i destroyedBlockGrid = StageToGrid(event->blockPos);
-		if (destroyedBlockGrid.x >= 0 && destroyedBlockGrid.x < BLOCK_COLUMNS &&
-			destroyedBlockGrid.y >= 0 && destroyedBlockGrid.y < BLOCK_ROWS) {
-			m_BlockGrid[destroyedBlockGrid.x][destroyedBlockGrid.y] = 0;
-		}
-	}
-
 	for (int i = 0; i < m_Entities.size(); i++) {
 		Entity ent = m_Entities[i];
+
+		if (!m_Registry->IsEntityLive(ent)) continue;
+
 		ColliderType colType = colCompArr.GetTComponent(ent).colType;
 
 		//Only collision check needed is Ball on everthing, and effects on blocks
@@ -320,9 +316,12 @@ void CollisionSystem::Update() {
 				}
 			}
 
-			//Iterate over rest of the vector to handle each collision
-			for (int j = i + 1; j < m_Entities.size(); j++) {
+			for (int j = 0; j < m_Entities.size(); j++) {
+				if (j == i) continue;
+
 				Entity otherEnt = m_Entities[j];
+				if (!m_Registry->IsEntityLive(otherEnt)) continue; //Awaiting reap
+
 				auto otherColType = colCompArr.GetTComponent(otherEnt).colType;
 				if (otherColType == ColliderType::Block) continue;
 
@@ -338,6 +337,7 @@ void CollisionSystem::Update() {
 			break;
 		}
 		case(ColliderType::Effects):
+		{
 			const auto& effectTrans = transCompArr.GetTComponent(ent);
 			sf::Vector2i minGrid = StageToGrid(effectTrans.position);
 			sf::Vector2i maxGrid = StageToGrid(effectTrans.position + effectTrans.size);
@@ -366,6 +366,7 @@ void CollisionSystem::Update() {
 				}
 			}
 			break;
+		}
 		}
 	}
 }

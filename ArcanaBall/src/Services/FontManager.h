@@ -10,9 +10,5 @@ public:
 private:
 	std::unordered_map<std::string, sf::Font> m_FontMap;
 
-#if BuildForPlayable
 	std::string fontBasePath = "assets/font/";
-#else 
-	std::string fontBasePath{ "../../../../ArcanaBall/assets/font/" };
-#endif
 };

@@ -18,6 +18,6 @@ public:
 	virtual void Update(float) = 0;
 	virtual void Render(sf::RenderWindow&) = 0;
 
-public:
+protected:
 	Game* m_Game;
 };
